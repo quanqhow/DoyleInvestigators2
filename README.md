@@ -1,5 +1,8 @@
 # Doyle Investigators - Vector Embeddings and Adversarial Analysis
 
+## Document for notes
+https://docs.google.com/document/d/1lYdSgOwpMAF2GGBTz4h0kvHQPEfisEoplJDX4\_YUQSc/edit?usp=sharing
+
 
 ## Notes for PM meeting on 10/14/20
 * All groups will select 4-5 crime novels (same from Project 1) that contain a total of 300K +- 10% tokens. The 4 Doyle's novels used in Project 1 have a total of ~203K words, so we need to select an additional Sherlock Holmes' "crime" novel.
