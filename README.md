@@ -35,3 +35,14 @@ https://docs.google.com/document/d/1lYdSgOwpMAF2GGBTz4h0kvHQPEfisEoplJDX4\_YUQSc
 * Document Simplification (https://github.com/asad1996172/Obfuscation-Systems/tree/master/Document%20Simplification%20PAN17)
 * Characters replaced by pronouns
 * Contractions
+
+### Edmon's Comments
+
+* Synonyms are good.
+* British to US English is OK, but tense change or typos are most likely not.
+* Tense can possibly change the meaning of the text, but if done carefully it could be fine.
+(Thinks of participles vs. simple past tense, etc. He was in prison/he has been in prison, etc. )
+* Character flipping can turn text into gibberish or can alter the meaning. There is no easy way to control it. (E.g. mud/mad, pea/pee, tea/tee, stop/step, and so on ...)
+* Plurals and singulars are tricky. He murdered a woman is not the same as he murdered women.
+* Re-arranging sentences how? You could consider changing active to passive voice. It is reasonably safe way.
+* Changing numbers and text might OK, but you could also squash meaning if done carelessly and automatically.
