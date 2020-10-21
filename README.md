@@ -10,32 +10,32 @@ a dataset of Sherlock Holmes novels and short stories.
 
 | Type  | Title                                | Words (N) |
 | :---- | :----------------------------------- | :-------: |
-| Novel | The Hound of the Baskervilles        | 59,170    |
-| Novel | The Sign of the Four                 | 43,050    |
-| Novel | A Study in Scarlet                   | 43,296    |
-| Novel | The Valley of Fear                   | 57,688    |
-| Story | The Boscombe Valley Mystery          | 9,615     |
-| Story | The Adventure of the Speckled Band   | 9,805     |
-| Story | The Five Orange Pips                 | 7,314     |
-| Story | The Adventure of the Cardboard Box   | 8,680     |
-| Story | The Musgave Ritual                   | 7,550     |
-| Story | The Reigate Squires                  | 7,164     |
-| Story | The Adventure of the Dancing Men     | 9,624     |
-| Story | The Adventure of the Second Stain    | 9,617     |
-| Total |                                      | 272,573   |
+| Novel | The Valley of Fear                   | 58,827    |
+| Novel | A Study in Scarlet                   | 43,862    |
+| Novel | The Sign of the Four                 | 43,705    |
+| Novel | The Hound of the Baskervilles        | 59,781    |
+| Story | The Boscombe Valley Mystery          | 9,722     |
+| Story | The Five Orange Pips                 | 7,388     |
+| Story | The Adventure of the Speckled Band   | 9,938     |
+| Story | The Adventure of the Cardboard Box   | 8,795     |
+| Story | The Musgave Ritual                   | 7,642     |
+| Story | The Reigate Squires                  | 7,303     |
+| Story | The Adventure of the Dancing Men     | 9,776     |
+| Story | The Adventure of the Second Stain    | 9,800     |
+| Total | Gensim tokenizer                     | 276,539   |
 
 * Short stories
   * The Adventures of Sherlock Holmes
-    * The Boscombe Valley Mystery
-    * The Adventure of the Speckled Band
-    * The Five Orange Pips
-  * Memoirs of Sherlock Holmes
-    * The Adventure of the Cardboard Box
-    * The Musgave Ritual
-    * The Reigate Squires
+    * 4 - The Boscombe Valley Mystery
+    * 5 - The Five Orange Pips
+    * 8 - The Adventure of the Speckled Band
+  * Memoirs of Sherlock Holmes (British version)
+    * 2 - The Adventure of the Cardboard Box
+    * 6 - The Musgave Ritual
+    * 7 - The Reigate Squires
   * The Return of Sherlock Holmes
-    * The Adventure of the Dancing Men
-    * The Adventure of the Second Stain
+    * 3 - The Adventure of the Dancing Men
+    * 13 - The Adventure of the Second Stain
 
 
 ## Pipeline Document
@@ -66,7 +66,9 @@ a dataset of Sherlock Holmes novels and short stories.
 ## Training, Validation, and Testing Datasets
 
 <!-- Each group creates a training, testing, validation dataset (20% author / 80% other authors). -->
-* Data unit
+* Data unit - represents a contiguous collection of words that create a "document"
+  of the corresponding author. To create a data unit, always start at the beginning
+  of a sentence and end when word count is fulfilled.
   * 1/2 page - 350 words
   * 2 page - 1,400 words
   * 5 page - 3,500 words
