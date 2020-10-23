@@ -8,6 +8,7 @@ Revising the output of Chris' synonym replacement;
 1) For synonyms perturbation: 20% upper limit per document;
 2) Synonym replacement using word vector similarity, part of speech, other model-agnostic qualities;
 
+Original source: https://gist.github.com/Ghost---Shadow/c361f2d6b4501f40648b#file-plag-py
 @author: Quan
 """
 
