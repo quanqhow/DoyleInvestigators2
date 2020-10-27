@@ -48,6 +48,13 @@ a dataset of Sherlock Holmes novels and short stories.
 * Remove non-alpha symbols
 * Lemmatize (NLTK)
 
+### Sentence Segmentation
+
+| Type                    | Sentences (N) |
+| :---------------------- | :-----------: |
+| NLTK line               | 18,616        |
+| NLTK punctuation        | 18,638        |
+
 
 ## Word Embeddings
 
