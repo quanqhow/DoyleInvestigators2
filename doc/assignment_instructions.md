@@ -9,6 +9,6 @@ Part 1: You will develop a classifier that can correctly classify the piece of w
 
 Part 2: You will develop a testing dataset for the other team. This testing dataset will have two parts:
 
-1. a mixture of short excerpts (0.5 pages (350 words), 2 pages (750 words)  and 5 pages (1750 words)) from the author they have to classify, interspersed with the writings of any other crime authors available on the project Guttenberg, and
+1. a mixture of short excerpts (0.5 pages (350 words), 2 pages (1400 words)  and 5 pages (3500 words)) from the author they have to classify, interspersed with the writings of any other crime authors available on the project Guttenberg, and
 
 2. an adversarial test set. You will take short excerpts, and perturb them so that a) they retain linguistic qualities of the original text (they are readable, have proper English form), but b) they are perturbed to confuse the word embedding-based model and other more-primitive techniques that you think will be used (n-grams, hard-coded rules).
