@@ -32,7 +32,7 @@ def select_all(tokens):
 
 def select_random(tokens, proportion=0.5):
   return_vals = [False] * len(tokens)
-  selections = random.choices(range(len(tokens)), k=proportion*len(tokens))
+  selections = random.choices(range(len(tokens)), k=int(proportion*len(tokens)))
   for selection in selections:
     return_vals[selection] = True
   return return_vals
