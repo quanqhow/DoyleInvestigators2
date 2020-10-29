@@ -11,8 +11,12 @@ infile = 'data/Doyle.txt'
 outdir = 'tmp'
 random_state = 0
 
-train_size = 0.9
-test_size = 1 - train_size
+part_size = 3500
+# Factor for capturing as much as possible from trailing text
+# Default is 1. but for set to 0.1 because 3500/350=10%
+remain_factor = 0.1
+
+test_size = 0.1
 train_outfile = 'Doyle_90.txt'
 test_outfile = 'Doyle_10.txt'
 
@@ -30,16 +34,18 @@ print('Corpus sentences:', len(sents))
 print('Corpus tokens:', len(list(flatten(sents))))
 
 # Document partitioning
-docs, docs_spans = partition(sents, spans=sents_spans)
+docs, docs_spans = partition(
+    sents, size=part_size, remain_factor=remain_factor, spans=sents_spans,
+)
 print('Documents:', len(docs))
 print('Document tokens:', token_count(docs[0]))
 
 # Document splits (train, test)
 train_docs, test_docs = docs_split(
-    docs, train_size=train_size, test_size=test_size, random_state=random_state
+    docs, test_size=test_size, random_state=random_state
 )
 train_idxs, test_idxs = next(shuffle_split(
-    docs, train_size=train_size, test_size=test_size, random_state=random_state
+    docs, test_size=test_size, random_state=random_state
 ))
 train_spans = [docs_spans[i] for i in train_idxs]
 test_spans = [docs_spans[i] for i in test_idxs]
