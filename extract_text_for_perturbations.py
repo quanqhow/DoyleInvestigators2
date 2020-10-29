@@ -1,10 +1,27 @@
 #! /usr/bin/python3
 
+import os
 from functions import *
 
 
+######################
+# User Configuration #
+######################
+infile = 'data/Doyle.txt'
+outdir = 'tmp'
+random_state = 0
+
+train_size = 0.9
+test_size = 1 - train_size
+train_outfile = 'Doyle_90.txt'
+test_outfile = 'Doyle_10.txt'
+
+
+##############
+# Processing #
+##############
 # Load corpus
-corpus = load_corpus('data/Doyle.txt')
+corpus = load_corpus(infile)
 print('Corpus characters:', len(corpus))
 
 # Preprocessing (sentence split, tokenizer, lemmatizer)
@@ -18,8 +35,12 @@ print('Documents:', len(docs))
 print('Document tokens:', token_count(docs[0]))
 
 # Document splits (train, test)
-train_docs, test_docs = docs_split(docs, train_size=0.9, random_state=0)
-train_idxs, test_idxs = next(shuffle_split(docs, train_size=0.9, random_state=0))
+train_docs, test_docs = docs_split(
+    docs, train_size=train_size, test_size=test_size, random_state=random_state
+)
+train_idxs, test_idxs = next(shuffle_split(
+    docs, train_size=train_size, test_size=test_size, random_state=random_state
+))
 train_spans = [docs_spans[i] for i in train_idxs]
 test_spans = [docs_spans[i] for i in test_idxs]
 print('Training documents:', len(train_docs))
@@ -31,10 +52,16 @@ print('Testing indexes:', len(test_idxs))
 print('Testing spans:', len(test_spans))
 print('Testing tokens:', token_count(test_docs[0]))
 
+# Create output directory
+# Use a temporary directory to prevent overwrites, user is responsible for
+# moving output to final destination.
+if not os.path.isdir(outdir):
+    os.makedirs(outdir, exist_ok=True)
+
 # Save training data to file
 train_text = ' '.join(get_documents_text_by_spans(corpus, train_spans))
-save_corpus(train_text, 'data/Doyle_90.txt')
+save_corpus(train_text, os.path.join(outdir, train_outfile))
 
 # Save testing data to file
 test_text = ' '.join(get_documents_text_by_spans(corpus, test_spans))
-save_corpus(test_text, 'data/Doyle_10.txt')
+save_corpus(test_text, os.path.join(outdir, test_outfile))
