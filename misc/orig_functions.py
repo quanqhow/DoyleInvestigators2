@@ -2,8 +2,7 @@
 
 import re
 import math
-# from smart_open import open
-import functools
+from smart_open import open
 import facet
 import sklearn
 from typing import (
@@ -88,41 +87,23 @@ def tokenize(
     lemmatizer = tokenizer1._lemmatizer
     tokenizer2 = facet.WhitespaceTokenizer(use_stopwords=False, min_token_length=1)
 
-    # Regexes to transform input text of tokenization process
-    # NOTE: Transformations need to maintain same alignment so that
-    # spans are consistent with input corpus.
-    tokenizer_transforms = [
-        # Remove non-alphanumerics (apostrophe for contractions)
-        functools.partial(re.sub, r"[^\w']", ' ', flags=re.ASCII),
-        # Remove enclosing quotes
-        functools.partial(re.sub, r"'(\w+)'", r' \1 ', flags=re.ASCII),
-    ]
-
-    # Regexes to select valid tokens
-    tokenizer_filters = [
-        # Check that tokens include at least one alpha character
-        functools.partial(re.search, r'[A-Za-z]', flags=re.ASCII),
-    ]
+    # Regex for remove non-alpha and numeric tokens
+    filter_pattern = re.compile(
+        '('
+        r"[^\w']"  # non-alphanumerics (except apostrophe to allow contractions)
+        '|'
+        r'\b\d+\b'  # standalone numbers
+        ')',
+        flags=re.ASCII,
+    )
 
     # Sentencize
     sents = []
     spans = []
     for sb, se, s in tokenizer1.sentencize(text):
-        # Apply transformations at the sentence level so that output
-        # from tokenizer are individual tokens.
-        for token_transform in tokenizer_transforms:
-            s = token_transform(s)
-
         sent = []
-        # Tokenize
-        for _, _, t in tokenizer2.tokenize(s):
-            # Apply filter
-            for token_filter in tokenizer_filters:
-                if token_filter(t):
-                    break
-            else:
-                continue
-
+        # Apply filter and tokenize
+        for _, _, t in tokenizer2.tokenize(filter_pattern.sub(delim, s)):
             if lemmatizer:
                 # Lemmatize selected parts-of-speech
                 # NOTE: Do not lemmatize words not matching selected POS.
@@ -134,6 +115,36 @@ def tokenize(
         if with_spans:
             spans.append((sb, se + 1))
     return (sents, spans) if with_spans else sents
+
+
+def tokenize2(text):
+    import nltk
+    import time
+
+    wnl = nltk.stem.WordNetLemmatizer()
+
+    # tokenize the data into sentences
+    sent = nltk.tokenize.sent_tokenize(text)
+    t = time.time()
+    sent_ls = []
+    for s in sent:
+        # tokenize sentence into words
+        s = re.split(' |\--', s)
+        w_ls = []
+        for w in s:
+            w = w.lower()
+            w = re.sub('[,"\.\'&\|:@>*;/=?!\']', "", w)
+            w = re.sub('^[0-9\.]*$', "", w)
+            w = re.sub("[^A-Za-z']+", " ", w)
+            w = wnl.lemmatize(w, pos='v')
+            w = wnl.lemmatize(w, pos='n')
+            w_ls.append(w) # each list is a sentence
+    # remove empty strings
+    while "" in w_ls:
+        w_ls.remove("")
+    sent_ls.append(w_ls) # list of lists
+    print('Time to clean up everything: {} mins'.format(round((time.time() - t) / 60, 2)))
+    return sent_ls
 
 
 def partition(
