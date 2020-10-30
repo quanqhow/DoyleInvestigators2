@@ -2,7 +2,7 @@
 
 import re
 import math
-from smart_open import open
+# from smart_open import open
 import functools
 import facet
 import sklearn

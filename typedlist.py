@@ -1,7 +1,6 @@
 import copy
 from typing import (
     Any,
-    Dict,
     Union,
     Iterable,
 )
@@ -16,7 +15,7 @@ class tlist(list):
 
         force_deepcopy (bool): Deepcopy items before adding to list.
 
-        metadata (dict): Custom metadata.
+        metadata (any): Custom metadata.
 
         dtype (type): Allowed types of items.
     """
@@ -25,7 +24,7 @@ class tlist(list):
         data=None,
         *,
         force_deepcopy: bool = False,
-        metadata: Dict[str, Any] = None,
+        metadata: Any = None,
         dtype: Union[type, Iterable[type]] = None,
     ):
         self.__dict__['force_deepcopy'] = force_deepcopy

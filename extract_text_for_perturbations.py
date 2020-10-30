@@ -13,7 +13,7 @@ random_state = 0
 
 part_size = 3500
 # Factor for capturing as much as possible from trailing text
-# Default is 1. but for set to 0.1 because 3500/350=10%
+# Default is 1. but set to 0.1 because 3500/350=10%
 remain_factor = 0.1
 
 test_size = 0.1
@@ -28,7 +28,7 @@ test_outfile = 'Doyle_10.txt'
 corpus = load_corpus(infile)
 print('Corpus characters:', len(corpus))
 
-# Preprocessing (sentence split, tokenizer, lemmatizer)
+# Preprocessing (sentence split, tokenizer)
 sents, sents_spans = tokenize(corpus, lemmatizer=None, with_spans=True)
 print('Corpus sentences:', len(sents))
 print('Corpus tokens:', len(list(flatten(sents))))
