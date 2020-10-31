@@ -1,3 +1,5 @@
+setuptools>=47
+wheel>=0.35
 typing>=3.7
 unidecode>=1.1
 configparser>=5.0
@@ -6,3 +8,4 @@ nltk>=3.5
 gensim>=3.8
 scikit-learn>=0.23
 numpy>=1.19
+urllib3>=1.25

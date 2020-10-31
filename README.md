@@ -6,10 +6,11 @@ a dataset of Sherlock Holmes novels and short stories.
 
 ## Installation
 
-* The following packages are required:
+* The following packages are required (see `requirements.txt`):
   * typing
   * configparser
   * unidecode
+  * urllib3
   * psutil
   * nltk
   * gensim
@@ -17,7 +18,9 @@ a dataset of Sherlock Holmes novels and short stories.
   * numpy
 
 * Install package
-  * pip install -e .
+  ```
+  >> pip install -e .
+  ```
 
 
 ## Novels and Short Stories
