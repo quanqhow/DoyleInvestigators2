@@ -1,4 +1,3 @@
-PKGDIR  := pipeline
 PYTHON  := python3
 
 .PHONY: help build bdist sdist clean

@@ -2,5 +2,8 @@ LICENSE
 README.md
 include project.cfg
 include requirements.txt
+include Makefile
+graft smarttimers
+graft tokenizers
 graft doc
 graft data
