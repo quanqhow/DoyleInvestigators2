@@ -1,0 +1,6 @@
+LICENSE
+README.md
+include project.cfg
+include requirements.txt
+graft doc
+graft data

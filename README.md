@@ -4,6 +4,22 @@ This project constructs a binary classifier for Sir Arthur Conan Doyle using
 a dataset of Sherlock Holmes novels and short stories.
 
 
+## Installation
+
+* The following packages are required:
+  * typing
+  * configparser
+  * unidecode
+  * psutil
+  * nltk
+  * gensim
+  * scikit-learn
+  * numpy
+
+* Install package
+  * pip install -e .
+
+
 ## Novels and Short Stories
 
 * Selection should have 300K +- 10% words in total.
