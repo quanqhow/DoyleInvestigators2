@@ -6,7 +6,7 @@ import textutils
 import functools
 import sys
 sys.path.append('..')
-from facet import NLTKTokenizer, WhitespaceTokenizer
+from tokenizers import NLTKTokenizer, WhitespaceTokenizer
 from textspan import TextSpan
 from typing import (
     Any,
@@ -25,7 +25,7 @@ class Tokenizer:
 
         use_stopwords (bool): If set, use stopwords, else otherwise.
 
-    Kwargs: (common options across facet.Tokenizers)
+    Kwargs: (common options across tokenizers.*Tokenizer)
         converters (str, iterable[callable]): Available options are 'lower',
             'upper', 'unidecode'
     """
@@ -106,6 +106,7 @@ class Author:
         self._corpus = textutils.load_text(corpus) if corpus else corpus
         self._parsed = TextSpan()
         self._docs = TextSpan()
+        self._embedding = None
 
     @property
     def corpus(self):
@@ -119,36 +120,60 @@ class Author:
     def words(self):
         depth = self._parsed.depth
         if depth >= 2:
-            yield from self._parsed.iter_tokens(depth - 1)
+            tokens = list(self._parsed.iter_tokens(depth - 1))
+            return TextSpan(tokens, (tokens[0].span[0], tokens[-1].span[1]))
+        return TextSpan()
 
     @property
-    def sents(self):
+    def sentences(self):
         depth = self._parsed.depth
         if depth >= 3:
-            yield from self._parsed.iter_tokens(depth - 2)
+            tokens = list(self._parsed.iter_tokens(depth - 2))
+            return TextSpan(tokens, (tokens[0].span[0], tokens[-1].span[1]))
+        return TextSpan()
+
+    # NOTE: *_str methods are sort of hacks in order to get collection
+    # of strings in the lowest level and not TextSpans.
+    @property
+    def words_str(self):
+        return list(str(w) for w in self.words)
+
+    @property
+    def sentences_str(self):
+        return list(str(s) for s in self.sentences)
+
+    @property
+    def sentences_list(self):
+        return list(list(s.iter_tokens()) for s in self.sentences)
 
     @property
     def docs(self):
         return self._docs
+
+    @property
+    def embedding(self):
+        return self._embedding
 
     def preprocess(self, tokenizer: 'Tokenizer' = None):
         # Reset because parsed corpus might have changed
         self._docs = TextSpan()
 
         if tokenizer is None:
-            self._parsed = TextSpan(self._corpus, (0, len(self._corpus)))
+            span = (0, len(self._corpus))
+            self._parsed = TextSpan(self._corpus, span)
             return
 
         sents = []
         for sb, se, s in tokenizer.sentencize(self._corpus):
             sent = []
             for tb, te, t in tokenizer.tokenize(s):
-                _tspan = (tb + sb, te + sb)
-                _t = tokenizer.lemmatize(t)
-                sent.append(TextSpan(_t, _tspan))
+                tspan = (tb + sb, te + sb)
+                t = tokenizer.lemmatize(t)
+                sent.append(TextSpan(t, tspan))
             if len(sent) > 0:
                 sents.append(TextSpan(sent, (sb, se)))
-        self._parsed.extend(sents)
+        span = (sents[0].span[0], sents[-1].span[1])
+        self._parsed = TextSpan(sents, span)
 
     def partition_into_docs(self, size: int = 350, remain_factor: float = 1.):
         """Partition text into documents of a specified token count."""
@@ -159,7 +184,7 @@ class Author:
             # Iterate through sentences
             cnt = 0
             doc = TextSpan()
-            for s in self.sents:
+            for s in self.sentences:
                 cnt += len(s)
                 if cnt <= size:
                     # Add sentence to current document until partition
@@ -169,7 +194,10 @@ class Author:
                         continue
                 else:
                     # Truncate last sentence for current document
-                    span = (s.span[0], s[size - cnt - 1].span[1])
+                    # NOTE: Span is not truncated because it represents the
+                    # actual sentences represented.
+                    span = (s.span[0], s.span[1])
+                    # span = (s.span[0], s[size - cnt - 1].span[1])
                     doc.append(TextSpan(s[:size - cnt], span))
 
                 doc.span = (doc[0].span[0], doc[-1].span[1])

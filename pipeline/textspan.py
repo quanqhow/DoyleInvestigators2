@@ -38,6 +38,18 @@ class TextSpan(tlist):
             **kwargs,
         )
 
+    def __hash__(self):
+        return hash(str(self))
+
+    def __contains__(self, item):
+        return bool(list(self.search(item)))
+
+    def __add__(self, other):
+        return str(self) + str(other) 
+        
+    def __iadd__(self, other):
+        raise Exception(f'invalid arithmetic assignment operation on {type(self)}')
+
     def __str__(self):
         # Generated string follows order of tokens, not their spans
         if len(self.delim) == 1:
