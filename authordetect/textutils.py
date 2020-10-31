@@ -2,14 +2,19 @@
 
 import os
 import json
-from smart_open import open
+import pickle
 import functools
+from smart_open import open
 from typing import Any, Tuple, Union, Iterable, Callable
 
 
 __all__ = [
     'load_text',
     'save_text',
+    'load_json',
+    'save_json',
+    'load_pickle',
+    'save_pickle',
     'merge_texts',
     'is_iter_not_str',
     'iter2str',
@@ -50,7 +55,7 @@ def load_json(fn: str) -> list:
         return json.load(fd)
 
 
-def save_json(data: list, fn: str):
+def save_json(data: object, fn: str):
     """Write a data structure into a JSON file."""
     # Create output directory (if available)
     outdir = os.path.dirname(fn)
@@ -60,6 +65,21 @@ def save_json(data: list, fn: str):
     with open(fn, 'w') as fd:
         json.dump(data, fd)
 
+
+def load_pickle(fn: str):
+    with open(fn, 'rb') as fd:
+        return pickle.load(fd)
+
+
+def save_pickle(data: object, fn: str):
+    # Create output directory (if available)
+    outdir = os.path.dirname(fn)
+    if outdir and not os.path.isdir(outdir):
+        os.makedirs(outdir, exist_ok=True)
+
+    with open(fn, 'wb') as fd:
+        pickle.dump(data, fd)
+ 
 
 def merge_texts(srcs: Iterable[str], delim: str = '\n') -> str:
     """Get text content from multiple sources and join into a

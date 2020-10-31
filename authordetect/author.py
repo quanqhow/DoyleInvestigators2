@@ -153,15 +153,21 @@ class Author:
         self._docs = docs
 
     def embed(self, **kwargs):
+        # Reset document embeddings
+        self._docs_vectors = numpy.array([])
+
         self._model = EmbeddingModel(**kwargs)
         self._model.train(self.sentences_words_str)
 
     def embed_docs(self, **kwargs):
-        if self._model is not None:
-            self._docs_vectors = numpy.array([
-                type(self).doc2vec(doc, self._model, **kwargs)
-                for doc in self.docs
-            ])
+        # NOTE: Auto-embed with default parameters
+        if self._model is None:
+            self.embed()
+
+        self._docs_vectors = numpy.array([
+            type(self).doc2vec(doc, self._model, **kwargs)
+            for doc in self.docs
+        ])
 
     def writer2vec(self, **kwargs):
         """Pipeline for generating Author and document embeddings."""
