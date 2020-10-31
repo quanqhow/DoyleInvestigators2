@@ -89,7 +89,9 @@ class tlist(list):
                 if isinstance(item, dtype):
                     break
             else:
-                raise TypeError(f'invalid item, requires a {self.dtype}')
+                raise TypeError(
+                    f'invalid item {type(item)}, requires a {self.dtype}'
+                )
 
     def _type_checks(self, items: Iterable[Any]):
         """Checks type of multiple items."""

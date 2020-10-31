@@ -3,8 +3,10 @@
 import re
 import math
 # from smart_open import open
-import functools
+import sys
+sys.path.append('..')
 import facet
+import functools
 import sklearn
 from typing import (
     Any,
@@ -29,7 +31,7 @@ def save_corpus(text: str, fn: str, *, flag: str = 'w') -> int:
 
 
 def merge_files(fns: Iterable[str], delim: str ='\n') -> str:
-    """Given a list of string sources, read and join into a delimited string."""
+    """Given a list of string sources, read and join into delimited string."""
     return delim.join(map(load_corpus, fns))
 
 
@@ -53,14 +55,34 @@ def to_string(
         return delim[0].join(map(lambda x: to_string(x, delim[1:]), data))
 
 
-def flatten(data: Iterable[Any], *, base_type: type = str) -> Iterator[Any]:
-    """Convert arbitrary iterable into a 1D iterable."""
-    if isinstance(data, base_type):
+def flatten(
+    data: Iterable[Any],
+    *,
+    dtype: Union[type, Tuple[type]] = (str, bytes),
+    df_mode: bool = True,
+) -> Iterator[Any]:
+    """Convert arbitrary iterable into a 1D iterator.
+
+    Args:
+        dtype (type): Object type to use as base case and stop recursion.
+
+        df_mode (bool): If set, use depth-first traverse technique.
+            If not set, use breadth-first instead.
+    """
+    if isinstance(data, dtype):
         yield data
     else:
-        for x in data:
-            for y in flatten(x):
-                yield y
+        if df_mode:
+            for item in data:
+                yield from flatten(item, dtype=dtype)
+        else:
+            _data = []
+            for item in data:
+                if isinstance(item, dtype):
+                    yield item
+                else:
+                    _data.append(item)
+            yield from flatten(_data, dtype=dtype)
 
 
 def token_count(text: Iterable[Any]) -> int:
