@@ -7,6 +7,6 @@ psutil>=5.7
 nltk>=3.5
 gensim>=3.8
 scikit-learn>=0.23
-numpy>=1.19
+numpy>=1.18
 smart_open>=3.0
 urllib3>=1.25

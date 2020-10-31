@@ -18,6 +18,16 @@ a dataset of Sherlock Holmes novels and short stories.
   * scikit-learn
   * numpy
 
+
+### Google Colab Install
+* Open a Colab notebook and run the following command
+  ```
+  !pip install git+https://github.com/edponce/DoyleInvestigators2
+  ```
+
+
+### Local Install
+
 * Install package and dependencies on a local system
   ```shell
   > git clone https://github.com/edponce/DoyleInvestigators2.git
