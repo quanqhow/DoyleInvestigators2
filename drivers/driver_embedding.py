@@ -7,7 +7,7 @@ from smarttimers import SmartTimer
 ######################
 # User Configuration #
 ######################
-infile = 'data/Doyle_10.txt'
+infile = '../data/Doyle_10.txt'
 outdir = 'tmp'
 part_size = 3500
 

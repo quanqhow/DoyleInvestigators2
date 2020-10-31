@@ -8,7 +8,7 @@ from smarttimers import SmartTimer
 ######################
 # User Configuration #
 ######################
-infile = 'data/Doyle.txt'
+infile = '../data/Doyle.txt'
 outdir = 'tmp'
 random_state = 0
 

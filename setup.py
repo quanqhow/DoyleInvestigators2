@@ -92,7 +92,7 @@ setup(
     ],
     platforms=['Linux'],
     zip_safe=False,
-    python_requires='>=3.6,<=3.8',
+    python_requires='>=3.6',
     include_package_data=True,
     packages=find_packages(),
     install_requires=load_requirements('requirements.txt'),

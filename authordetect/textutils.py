@@ -1,7 +1,7 @@
 #! /usr/bin/python3
 
 import json
-# from smart_open import open
+from smart_open import open
 import functools
 from typing import Any, Tuple, Union, Iterable, Callable
 
