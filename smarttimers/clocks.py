@@ -96,7 +96,6 @@ if sys.version_info >= (3, 7):
         ("process_time", std_time.process_time),
         ("thread_time", std_time.thread_time),
         ("time", std_time.time),
-        ("clock", std_time.clock),
         ))
 else:
     CLOCKS = OrderedDict((

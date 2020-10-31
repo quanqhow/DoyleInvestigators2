@@ -1,17 +1,14 @@
 #! /usr/bin/python3
 
 import os
-from author import Author, Tokenizer
-from train import split_data_into_train_test
-from textspan import TextSpan
-import textutils
+from authordetect import Author, Tokenizer, TextSpan, textutils, trainutils
 from smarttimers import SmartTimer
 
 
 ######################
 # User Configuration #
 ######################
-infile = '../data/Doyle.txt'
+infile = 'data/Doyle.txt'
 outdir = 'tmp'
 random_state = 0
 
@@ -48,7 +45,7 @@ print('Documents:', len(a.docs))
 print('Document tokens:', a.docs[0].size)
 
 t.tic('Train/test splits')
-train_docs, test_docs = split_data_into_train_test(
+train_docs, test_docs = trainutils.split_data_into_train_test(
     a.docs,
     test_size=test_size,
     random_state=random_state,

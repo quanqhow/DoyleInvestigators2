@@ -1,8 +1,8 @@
 #! /usr/bin/python3
 
 import re
-import textutils
-from typedlist import tlist
+from .textutils import iter2str
+from .typedlist import tlist
 from typing import Tuple, Union, Iterable
 
 
@@ -43,8 +43,8 @@ class TextSpan(tlist):
         return bool(list(self.search(item)))
 
     def __add__(self, other) -> str:
-        return str(self) + str(other) 
-        
+        return str(self) + str(other)
+
     def __iadd__(self, other):
         raise ArithmeticError(f'invalid arithmetic assignment operation on {type(self)}')
 
@@ -52,8 +52,8 @@ class TextSpan(tlist):
         # Generated string follows order of tokens, not their spans.
         # NOTE: sort() will do an in-place sort based on spans.
         if len(self.delim) == 1:
-            return textutils.iter2str(self, self.depth * self.delim)
-        return textutils.iter2str(self, self.delim)
+            return iter2str(self, self.depth * self.delim)
+        return iter2str(self, self.delim)
 
     @property
     def str(self):

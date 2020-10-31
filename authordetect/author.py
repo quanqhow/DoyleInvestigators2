@@ -1,13 +1,11 @@
 #! /usr/bin/python3
 
-import sys
-sys.path.append('..')
-from tokenizers import NLTKTokenizer, WhitespaceTokenizer
 import re
 import math
-import textutils
 import functools
-from textspan import TextSpan
+from .textutils import load_text
+from .textspan import TextSpan
+from .tokenizers import NLTKTokenizer, WhitespaceTokenizer
 from typing import Any, List, Tuple, Union, Iterable
 
 
@@ -68,11 +66,11 @@ class Tokenizer:
             functools.partial(re.search, r'[A-Za-z]', flags=re.ASCII),
         ]
 
-    def sentencize(self, text: str, *, with_spans: bool = True):
+    def sentencize(self, text: str):
         for b, e, t in self._sentencizer.sentencize(text):
-            yield (b, e + 1, t) if with_spans else t
+            yield (b, e + 1, t)
 
-    def tokenize(self, text: str, *, with_spans: bool = True):
+    def tokenize(self, text: str):
         # Apply transformations at the sentence level so that output
         # from tokenizer are individual tokens.
         for token_transform in self._tokenizer_transforms:
@@ -84,7 +82,7 @@ class Tokenizer:
                     break
             else:
                 continue
-            yield (b, e + 1, t) if with_spans else t
+            yield (b, e + 1, t)
 
     def lemmatize(self, text: str, pos: Iterable[str] = 'vn') -> str:
         """Lemmatize selected parts-of-speech."""
@@ -97,7 +95,7 @@ class Tokenizer:
 
 class Author:
     def __init__(self, corpus: str = None):
-        self._corpus = textutils.load_text(corpus) if corpus else corpus
+        self._corpus = load_text(corpus) if corpus else corpus
         self._parsed = TextSpan()
         self._docs = TextSpan()
         self._embedding = None
@@ -157,7 +155,7 @@ class Author:
         else:
             sents = TextSpan()
             for sb, se, s in tokenizer.sentencize(self._corpus):
-                sent = TextSpan() 
+                sent = TextSpan()
                 for tb, te, t in tokenizer.tokenize(s):
                     tspan = (tb + sb, te + sb)
                     t = tokenizer.lemmatize(t)
@@ -165,7 +163,8 @@ class Author:
                 if len(sent) > 0:
                     sent.span = (sb, se)
                     sents.append(sent)
-            sents.span = (sents[0].span[0], sents[-1].span[1])
+            if len(sents) > 0:
+                sents.span = (sents[0].span[0], sents[-1].span[1])
             self._parsed = sents
 
 
@@ -207,5 +206,6 @@ class Author:
                 yield doc
 
         docs = list(partition(size, remain_factor))
-        span = (docs[0].span[0], docs[-1].span[1])
+        if len(docs) > 0:
+            span = (docs[0].span[0], docs[-1].span[1])
         self._docs = TextSpan(docs, span)

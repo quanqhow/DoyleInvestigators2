@@ -7,6 +7,9 @@ from gensim.models import Word2Vec
 from typing import Iterable
 
 
+__all__ = ['EmbeddingModel']
+
+
 class EmbeddingModel:
     def __init__(self, **kwargs):
         self._sentences = None

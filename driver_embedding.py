@@ -1,18 +1,13 @@
 #! /usr/bin/python3
 
-import os
-from author import Author, Tokenizer
-from train import split_data_into_train_test
-from textspan import TextSpan
-import textutils
-from embedding import EmbeddingModel
+from authordetect import Author, Tokenizer, EmbeddingModel
 from smarttimers import SmartTimer
 
 
 ######################
 # User Configuration #
 ######################
-infile = '../data/Doyle_10.txt'
+infile = 'data/Doyle_10.txt'
 outdir = 'tmp'
 part_size = 3500
 
