@@ -24,7 +24,7 @@ a dataset of Sherlock Holmes novels and short stories.
   ```
 
 * Create a virtual environment (Anaconda)
-  ```python
+  ```shell
   > conda create -n authordetect python=3.7
   > cd DoyleInvestigators2
   > pip install -e .
