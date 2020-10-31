@@ -1,8 +1,7 @@
 #! /usr/bin/python3
 
 import os
-from authordetect import Author, Tokenizer, TextSpan, textutils, trainutils
-from smarttimers import SmartTimer
+from authordetect import Author, Tokenizer, TextSpan, textutils, trainutils, SmartTimer
 
 
 ######################

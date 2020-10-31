@@ -1,8 +1,7 @@
 #! /usr/bin/python3
 
 import numpy
-from authordetect import Author, Tokenizer, Classifier
-from smarttimers import SmartTimer
+from authordetect import Author, Tokenizer, Classifier, SmartTimer
 
 # NOTE: Set PYTHONHASHSEED to constant value to have deterministic hashing
 # across Python interpreter processes.

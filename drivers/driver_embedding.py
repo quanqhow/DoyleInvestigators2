@@ -1,7 +1,6 @@
 #! /usr/bin/python3
 
-from authordetect import Author, Tokenizer
-from smarttimers import SmartTimer
+from authordetect import Author, Tokenizer, SmartTimer
 
 
 ######################

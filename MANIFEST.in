@@ -4,5 +4,4 @@ include project.cfg
 include requirements.txt
 include Makefile
 graft data
-graft smarttimers
 graft drivers
