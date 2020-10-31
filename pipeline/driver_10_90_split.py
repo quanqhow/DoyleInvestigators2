@@ -34,8 +34,8 @@ print('Corpus characters:', len(a.corpus))
 # Preprocessing (sentence split, tokenizer)
 tokenizer = Tokenizer(lemmatizer=None)
 a.preprocess(tokenizer)
-print('Corpus sentences:', len(list(a.sents)))
-print('Corpus tokens:', len(list(a.words)))
+print('Corpus sentences:', len(a.sentences))
+print('Corpus tokens:', len(a.words))
 
 # Document partitioning
 a.partition_into_docs(part_size, remain_factor)
@@ -55,10 +55,9 @@ print('Training tokens:', train_docs[0].size)
 print('Testing documents:', len(test_docs))
 print('Testing tokens:', test_docs[0].size)
 
-
 # Create output directory
 # Use a temporary directory to prevent overwrites, user is responsible for
-# moving output to final destination.
+# moving output to a valid destination.
 if not os.path.isdir(outdir):
     os.makedirs(outdir, exist_ok=True)
 
