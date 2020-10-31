@@ -1,11 +1,7 @@
+#! /usr/bin/python3
+
 import sklearn
-from typing import (
-    Any,
-    List,
-    Tuple,
-    Iterable,
-    Iterator,
-)
+from typing import Any, List, Tuple, Iterable, Iterator
 
 
 __all__ = [

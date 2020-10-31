@@ -1,9 +1,10 @@
+#! /usr/bin/python3
+
 import copy
-from typing import (
-    Any,
-    Union,
-    Iterable,
-)
+from typing import Any, Union, Iterable
+
+
+__all__ = ['tlist']
 
 
 class tlist(list):

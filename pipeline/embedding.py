@@ -4,14 +4,13 @@ import os
 # import multiprocessing
 import psutil
 from gensim.models import Word2Vec
-from typing import (
-    Iterable,
-)
+from typing import Iterable
 
 
 class EmbeddingModel:
     def __init__(self, **kwargs):
         self._sentences = None
+        self._params = None
         self._model = Word2Vec(
             size=kwargs.pop('size', 50),
             window=kwargs.pop('window', 5),
@@ -54,20 +53,20 @@ class EmbeddingModel:
         return self._model.wv.vectors_norm
 
     def train(self, sentences: Iterable[Iterable[str]] = None, **kwargs):
-        # NOTE: Sentences are not deepcopied, so they are prone to side-effects
-        self._sentences = sentences
-
         # Build vocabulary table
-        self._model.build_vocab(self._sentences, progress_per=10000)
+        self._model.build_vocab(sentences, progress_per=10000)
 
         # Training of the model
         self._model.train(
-            self._sentences,
+            sentences,
             total_examples=kwargs.pop('total_examples', self._model.corpus_count),
             epochs=kwargs.pop('epochs', self._model.iter),
             report_delay=kwargs.pop('report_delay', 1),
             **kwargs,
         )
+
+        # NOTE: Sentences are not deepcopied, so they are prone to side-effects
+        self._sentences = sentences
 
     def save(self, outfile):
         # Create output directory (if available)

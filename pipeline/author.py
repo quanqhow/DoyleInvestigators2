@@ -1,20 +1,14 @@
 #! /usr/bin/python3
 
+import sys
+sys.path.append('..')
+from tokenizers import NLTKTokenizer, WhitespaceTokenizer
 import re
 import math
 import textutils
 import functools
-import sys
-sys.path.append('..')
-from tokenizers import NLTKTokenizer, WhitespaceTokenizer
 from textspan import TextSpan
-from typing import (
-    Any,
-    List,
-    Tuple,
-    Union,
-    Iterable,
-)
+from typing import Any, List, Tuple, Union, Iterable
 
 
 __all__ = ['Tokenizer', 'Author']
@@ -132,8 +126,11 @@ class Author:
             return TextSpan(tokens, (tokens[0].span[0], tokens[-1].span[1]))
         return TextSpan()
 
-    # NOTE: *_str methods are sort of hacks in order to get collection
-    # of strings in the lowest level and not TextSpans.
+    @property
+    def docs(self):
+        return self._docs
+
+    # NOTE: *_* properties are utility methods useful to get lists of strings.
     @property
     def words_str(self):
         return list(str(w) for w in self.words)
@@ -143,12 +140,8 @@ class Author:
         return list(str(s) for s in self.sentences)
 
     @property
-    def sentences_list(self):
+    def sentences_words_str(self):
         return list(list(s.iter_tokens()) for s in self.sentences)
-
-    @property
-    def docs(self):
-        return self._docs
 
     @property
     def embedding(self):
@@ -161,19 +154,20 @@ class Author:
         if tokenizer is None:
             span = (0, len(self._corpus))
             self._parsed = TextSpan(self._corpus, span)
-            return
+        else:
+            sents = TextSpan()
+            for sb, se, s in tokenizer.sentencize(self._corpus):
+                sent = TextSpan() 
+                for tb, te, t in tokenizer.tokenize(s):
+                    tspan = (tb + sb, te + sb)
+                    t = tokenizer.lemmatize(t)
+                    sent.append(TextSpan(t, tspan))
+                if len(sent) > 0:
+                    sent.span = (sb, se)
+                    sents.append(sent)
+            sents.span = (sents[0].span[0], sents[-1].span[1])
+            self._parsed = sents
 
-        sents = []
-        for sb, se, s in tokenizer.sentencize(self._corpus):
-            sent = []
-            for tb, te, t in tokenizer.tokenize(s):
-                tspan = (tb + sb, te + sb)
-                t = tokenizer.lemmatize(t)
-                sent.append(TextSpan(t, tspan))
-            if len(sent) > 0:
-                sents.append(TextSpan(sent, (sb, se)))
-        span = (sents[0].span[0], sents[-1].span[1])
-        self._parsed = TextSpan(sents, span)
 
     def partition_into_docs(self, size: int = 350, remain_factor: float = 1.):
         """Partition text into documents of a specified token count."""

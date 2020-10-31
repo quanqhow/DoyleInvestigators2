@@ -1,18 +1,16 @@
+#! /usr/bin/python3
+
 import re
 import textutils
 from typedlist import tlist
-from typing import (
-    Tuple,
-    Union,
-    Iterable,
-)
+from typing import Tuple, Union, Iterable
 
 
 __all__ = ['TextSpan']
 
 
 class TextSpan(tlist):
-    """Composable lazy container representing a text span.
+    """Composable container representing a text span.
 
     Args:
         span ((int,int)): Index bounds from original string.
@@ -44,14 +42,15 @@ class TextSpan(tlist):
     def __contains__(self, item):
         return bool(list(self.search(item)))
 
-    def __add__(self, other):
+    def __add__(self, other) -> str:
         return str(self) + str(other) 
         
     def __iadd__(self, other):
-        raise Exception(f'invalid arithmetic assignment operation on {type(self)}')
+        raise ArithmeticError(f'invalid arithmetic assignment operation on {type(self)}')
 
     def __str__(self):
-        # Generated string follows order of tokens, not their spans
+        # Generated string follows order of tokens, not their spans.
+        # NOTE: sort() will do an in-place sort based on spans.
         if len(self.delim) == 1:
             return textutils.iter2str(self, self.depth * self.delim)
         return textutils.iter2str(self, self.delim)
@@ -120,20 +119,20 @@ class TextSpan(tlist):
 
         yield from search(self)
 
-    def describe_span(self, span: Tuple[int, int]) -> Iterable[int]:
-        """Find the hierarchy of structure indexes where a span is located."""
-        def is_span_bounded_by(s1, s2) -> bool:
-            """Checks if span1 is bounded by span2."""
-            return s1[0] >= s2[0] and s1[1] <= s2[1]
-
-        idxs = []
-        # Early exit if span is empty
-        if span[0] == span[1]:
-            return idxs
-        # for item in obj:
-        #     if isinstance(item, type(self)):
-        #         if is_span_bounded_by
-        return idxs
+    # def describe_span(self, span: Tuple[int, int]) -> Iterable[int]:
+    #     """Find the hierarchy of structure indexes where a span is located."""
+    #     def is_span_bounded_by(s1, s2) -> bool:
+    #         """Checks if span1 is bounded by span2."""
+    #         return s1[0] >= s2[0] and s1[1] <= s2[1]
+    #
+    #     idxs = []
+    #     # Early exit if span is empty
+    #     if span[0] == span[1]:
+    #         return idxs
+    #     # for item in obj:
+    #     #     if isinstance(item, type(self)):
+    #     #         if is_span_bounded_by
+    #     return idxs
 
     def iter_tokens(self, depth: int = -1):
         def iter_tokens(obj, curr_depth):

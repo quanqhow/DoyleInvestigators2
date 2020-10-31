@@ -3,13 +3,7 @@
 import json
 # from smart_open import open
 import functools
-from typing import (
-    Any,
-    Tuple,
-    Union,
-    Iterable,
-    Callable,
-)
+from typing import Any, Tuple, Union, Iterable, Callable
 
 
 __all__ = [

@@ -32,8 +32,7 @@ a = Author(infile)
 print('Corpus characters:', len(a.corpus))
 
 # Preprocessing (sentence split, tokenizer)
-tokenizer = Tokenizer(lemmatizer=None)
-a.preprocess(tokenizer)
+a.preprocess(Tokenizer(lemmatizer=None))
 print('Corpus sentences:', len(a.sentences))
 print('Corpus tokens:', len(a.words))
 
