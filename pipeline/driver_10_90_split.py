@@ -5,6 +5,7 @@ from author import Author, Tokenizer
 from train import split_data_into_train_test
 from textspan import TextSpan
 import textutils
+from smarttimers import SmartTimer
 
 
 ######################
@@ -27,21 +28,26 @@ test_outfile = 'Doyle_10.txt'
 ##############
 # Processing #
 ##############
-# Load corpus
+t = SmartTimer('10/90 Split')
+
+t.tic('Load corpus')
 a = Author(infile)
+t.toc()
 print('Corpus characters:', len(a.corpus))
 
-# Preprocessing (sentence split, tokenizer)
+t.tic('Preprocessing: Tokenizer')
 a.preprocess(Tokenizer(lemmatizer=None))
+t.toc()
 print('Corpus sentences:', len(a.sentences))
 print('Corpus tokens:', len(a.words))
 
-# Document partitioning
+t.tic('Document partitioning')
 a.partition_into_docs(part_size, remain_factor)
+t.toc()
 print('Documents:', len(a.docs))
 print('Document tokens:', a.docs[0].size)
 
-# Document splits (train, test)
+t.tic('Train/test splits')
 train_docs, test_docs = split_data_into_train_test(
     a.docs,
     test_size=test_size,
@@ -49,6 +55,7 @@ train_docs, test_docs = split_data_into_train_test(
 )
 train_docs = TextSpan(train_docs)
 test_docs = TextSpan(test_docs)
+t.toc()
 print('Training documents:', len(train_docs))
 print('Training tokens:', train_docs[0].size)
 print('Testing documents:', len(test_docs))
@@ -60,6 +67,7 @@ print('Testing tokens:', test_docs[0].size)
 if not os.path.isdir(outdir):
     os.makedirs(outdir, exist_ok=True)
 
+t.tic('Save to file')
 # Save training data to file
 train_spans = [doc.span for doc in train_docs]
 train_text = ' '.join(textutils.get_text_from_span(a.corpus, train_spans))
@@ -69,3 +77,7 @@ textutils.save_text(train_text, os.path.join(outdir, train_outfile))
 test_spans = [doc.span for doc in test_docs]
 test_text = ' '.join(textutils.get_text_from_span(a.corpus, test_spans))
 textutils.save_text(test_text, os.path.join(outdir, test_outfile))
+t.toc()
+
+print('Walltime:', t.walltime)
+print(t)
