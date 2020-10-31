@@ -36,9 +36,6 @@ class TextSpan(tlist):
             **kwargs,
         )
 
-    def __hash__(self):
-        return hash(str(self))
-
     def __contains__(self, item):
         return bool(list(self.search(item)))
 

@@ -1,5 +1,6 @@
 #! /usr/bin/python3
 
+import os
 import json
 from smart_open import open
 import functools
@@ -35,6 +36,11 @@ def load_text(src: str, *, phony: bool = False) -> str:
 
 def save_text(text: str, fn: str, *, flag: str = 'w') -> int:
     """Save a string to a file."""
+    # Create output directory (if available)
+    outdir = os.path.dirname(fn)
+    if outdir and not os.path.isdir(outdir):
+        os.makedirs(outdir, exist_ok=True)
+
     with open(fn, flag) as fd:
         return fd.write(text)
 
@@ -46,6 +52,11 @@ def load_json(fn: str) -> list:
 
 def save_json(data: list, fn: str):
     """Write a data structure into a JSON file."""
+    # Create output directory (if available)
+    outdir = os.path.dirname(fn)
+    if outdir and not os.path.isdir(outdir):
+        os.makedirs(outdir, exist_ok=True)
+
     with open(fn, 'w') as fd:
         json.dump(data, fd)
 

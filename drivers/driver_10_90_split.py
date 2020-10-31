@@ -61,7 +61,7 @@ print('Testing tokens:', test_docs[0].size)
 # Create output directory
 # Use a temporary directory to prevent overwrites, user is responsible for
 # moving output to a valid destination.
-if not os.path.isdir(outdir):
+if outdir and not os.path.isdir(outdir):
     os.makedirs(outdir, exist_ok=True)
 
 t.tic('Save to file')

@@ -12,8 +12,12 @@ __all__ = ['EmbeddingModel']
 
 class EmbeddingModel:
     def __init__(self, **kwargs):
-        self._sentences = None
         self._params = None
+
+        # Prevent from training during initialization, use train()
+        kwargs.pop('sentences', None)
+        kwargs.pop('corpus_file', None)
+
         self._model = Word2Vec(
             size=kwargs.pop('size', 50),
             window=kwargs.pop('window', 5),
@@ -37,10 +41,6 @@ class EmbeddingModel:
     @property
     def model(self):
         return self._model
-
-    @property
-    def sentences(self):
-        return self._sentences
 
     @property
     def vocabulary(self):
@@ -68,20 +68,16 @@ class EmbeddingModel:
             **kwargs,
         )
 
-        # NOTE: Sentences are not deepcopied, so they are prone to side-effects
-        self._sentences = sentences
-
     def save(self, outfile):
         # Create output directory (if available)
         outdir = os.path.dirname(outfile)
-        if not os.path.isdir(outdir):
+        if outdir and not os.path.isdir(outdir):
             os.makedirs(outdir, exist_ok=True)
 
         # Save the model
-        if outfile is not None:
+        if outfile:
             # self._model.save_word2vec_format(outfile)
             self._model.save(outfile)
 
     def load(self, infile):
-        self._sentences = None
-        self._model.load(infile)
+        self._model = Word2Vec.load(infile)
