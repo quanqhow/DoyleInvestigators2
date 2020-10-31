@@ -1,16 +1,7 @@
 import copy
 from unidecode import unidecode
-from abc import (
-    ABC,
-    abstractmethod,
-)
-from typing import (
-    Tuple,
-    Union,
-    Iterator,
-    Iterable,
-    Callable,
-)
+from abc import ABC, abstractmethod
+from typing import Tuple, Union, Iterator, Iterable, Callable
 
 
 __all__ = ['BaseTokenizer']

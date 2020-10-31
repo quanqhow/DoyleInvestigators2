@@ -1,12 +1,15 @@
 from .base import BaseTokenizer
 from .nltk import NLTKTokenizer
 from .whitespace import WhitespaceTokenizer
+from .regex import RegexTokenizer
 from typing import Union
 
 
 tokenizer_map = {
     NLTKTokenizer.NAME: NLTKTokenizer,
     WhitespaceTokenizer.NAME: WhitespaceTokenizer,
+    RegexTokenizer.NAME: RegexTokenizer,
+    None: WhitespaceTokenizer,
 }
 
 
