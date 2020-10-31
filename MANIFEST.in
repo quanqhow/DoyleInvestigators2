@@ -3,6 +3,6 @@ README.md
 include project.cfg
 include requirements.txt
 include Makefile
-graft doc
 graft data
 graft smarttimers
+graft drivers

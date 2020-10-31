@@ -17,9 +17,55 @@ a dataset of Sherlock Holmes novels and short stories.
   * scikit-learn
   * numpy
 
-* Install package
+* Install package and dependencies on a local system
+  ```shell
+  > git clone https://github.com/edponce/DoyleInvestigators2.git
+  > cd DoyleInvestigators2
+  > pip install -e .
+  > python3
   ```
-  >> pip install -e .
+  ```python
+  >>> import authordetect
+  >>> ...
+  ```
+
+## General Information
+
+The `authordetect` package follows a modular object-oriented approach.
+The most relevant classes are:
+* `Author` (*authordetect/author.py*) - This class represents a corpus
+  corresponding to a single author and provides capabilities to load and
+  tokenize corpus, partition into documents, create embedding models for author
+  and each document. All these actions are part of the `writer2vec` algorithm
+  (see Overleaf paper), and a method with the same name is provided that
+  applies these transformations as a single step.
+* `Tokenizer` (*authordetect/tokenizer.py*) - This class represents a tokenizer
+  for performing sentence segmentation and tokenization of an `Author's`
+  corpus. It also contains a list of stopwords (from NLTK).
+* `Classifier` (*authordetect/classifier*) - This class represents a MLP
+  classifier and is used to train on document vectors (with corresponding
+  lables). Afterwards, it can provide predictions on new document vectors.
+
+
+## Usage
+
+### Example: Create an author's embedding matrix
+
+  ```python
+  >>> # Load an author's corpus
+  >>> from author import Author, Tokenizer
+  >>> author = Author('data/Doyle_10.txt')
+  >>> author.corpus  # this is the raw text
+  >>>
+  >>> # Preprocess text without removing stopwords
+  >>> tokenizer = Tokenizer(use_stopwords=False)
+  >>> author.preprocess(tokenizer)
+  >>>
+  >>> # Create an author's word2vec embedding model
+  >>> author.model.vocabulary  # access vocabulary from entire corpus
+  >>> author.model.vectors  # access non-normalized embedding matrix (NumPy 2D array)
+  >>> author.model.vectors_norm  # access normalized embedding matrix (NumPy 2D array)
+  >>> author.model['holmes']  # get vector associated with a word
   ```
 
 

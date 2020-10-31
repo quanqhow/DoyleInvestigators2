@@ -38,6 +38,10 @@ class EmbeddingModel:
             **kwargs,
         )
 
+    def __getitem__(self, key):
+        """Returns the vector associated with a given word."""
+        return self._model.wv.word_vec(key)
+
     @property
     def model(self):
         return self._model
