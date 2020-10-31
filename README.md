@@ -7,6 +7,7 @@ a dataset of Sherlock Holmes novels and short stories.
 ## Installation
 
 * The following packages are required (see `requirements.txt`):
+  * Python 3.7 or greater
   * typing
   * configparser
   * unidecode
@@ -20,10 +21,17 @@ a dataset of Sherlock Holmes novels and short stories.
 * Install package and dependencies on a local system
   ```shell
   > git clone https://github.com/edponce/DoyleInvestigators2.git
+  ```
+
+* Create a virtual environment (Anaconda)
+  ```python
+  > conda create -n authordetect python=3.7
   > cd DoyleInvestigators2
   > pip install -e .
   > python3
   ```
+
+* See `Usage` section below.
   ```python
   >>> import authordetect
   >>> ...
