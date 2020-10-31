@@ -20,10 +20,10 @@ a dataset of Sherlock Holmes novels and short stories.
 
 
 ### Google Colab Install
-* Open a Colab notebook and run the following command
-  ```
-  !pip install git+https://github.com/edponce/DoyleInvestigators2
-  ```
+* See example notebook in `drivers/AuthorDetect_AuthorEmbedding.ipynb`.
+  The code is download directly from GitHub repo and installed.
+  For data files, you need to mount the Google Drive so that the folder shared
+  with corpus data is visible for notebook.
 
 
 ### Local Install
@@ -38,7 +38,8 @@ a dataset of Sherlock Holmes novels and short stories.
   > conda create -n authordetect python=3.7
   > cd DoyleInvestigators2
   > pip install -e .
-  > python3
+  > python setup_nltk.py
+  > python
   ```
 
 * See `Usage` section below.

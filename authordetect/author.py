@@ -25,9 +25,9 @@ class Author:
         # Print info on how is input considered so that if a filename does
         # not exists, then user can be informed.
         if self._corpus == corpus:
-            print('Input Mode: Author was provided raw text')
+            print('Input Mode: Author corpus was provided as raw text')
         else:
-            print('Input Mode: Author was provided text file')
+            print('Input Mode: Author corpus is loaded from a text file')
         self._parsed = TextSpan()
         self._docs = TextSpan()
         self._model = None  # EmbeddingModel
