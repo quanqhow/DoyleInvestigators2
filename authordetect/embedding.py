@@ -56,7 +56,6 @@ class EmbeddingModel:
 
     @property
     def vectors_norm(self):
-        self._model.wv.init_sims()
         return self._model.wv.vectors_norm
 
     def train(self, sentences: Iterable[Iterable[str]] = None, **kwargs):
@@ -71,6 +70,9 @@ class EmbeddingModel:
             report_delay=kwargs.pop('report_delay', 1),
             **kwargs,
         )
+
+        # Always calculate norm vectors
+        self._model.wv.init_sims()
 
     def save(self, outfile):
         # Create output directory (if available)

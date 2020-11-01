@@ -1,4 +1,5 @@
 # Other
+pubmed_abstracts
 **/*.bin
 **/*.pkl
 **/*.swp
