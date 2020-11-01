@@ -16,7 +16,7 @@ mlp_file = 'mlp_50dim_350part.pkl'
 
 threads = 4 if seed is None else 1
 if seed is not None:
-    os.environ['PYTHONHASHSEED'] = str(0)
+    os.environ['PYTHONHASHSEED'] = str(seed)
 
 
 # Single document
