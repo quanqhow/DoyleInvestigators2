@@ -8,6 +8,5 @@ nltk.download('punkt')
 nltk.download('averaged_perceptron_tagger')
 # Universal POS tags
 nltk.download('universal_tagset')
-# Stemmers
+# Lemmatizers/Stemmers
 nltk.download('wordnet')
-nltk.download('rslp')
