@@ -20,24 +20,29 @@ def np_sum(data: numpy.ndarray):
 
 
 class Author:
-    def __init__(self, corpus: str = None):
+    def __init__(self, corpus: str, label: int):
         self._corpus = load_text(corpus) if corpus else corpus
         # Print info on how is input considered so that if a filename does
         # not exists, then user can be informed.
         if self._corpus is not None:
             if self._corpus == corpus:
-                print('Input Mode: Author corpus was provided as raw text')
+                print('Author corpus was provided as raw text')
             else:
-                print('Input Mode: Author corpus is loaded from a file')
+                print('Author corpus will be loaded from a file')
+        self._label = label
         self._parsed = TextSpan()
         self._docs = TextSpan()
-        self._model = None  # EmbeddingModel
+        self._embedding = None  # EmbeddingModel
         self._docs_vectors = numpy.array([])
         self._docs_vectors_norm = numpy.array([])
 
     @property
     def corpus(self):
         return self._corpus
+
+    @property
+    def label(self):
+        return self._label
 
     @property
     def parsed(self):
@@ -77,8 +82,8 @@ class Author:
         return list(list(s.iter_tokens()) for s in self.sentences)
 
     @property
-    def model(self):
-        return self._model
+    def embedding(self):
+        return self._embedding
 
     @property
     def docs_vectors(self):
@@ -116,7 +121,7 @@ class Author:
             self._parsed = sents
 
 
-    def partition_into_docs(self, size: int = 350, remain_factor: float = 1.):
+    def partition_into_docs(self, size: int = None, remain_factor: float = 1.):
         """Partition text into documents of a specified token count."""
         def partition(size, remain_factor):
             # Limit lower bound of size
@@ -153,7 +158,12 @@ class Author:
                 doc.span = (doc[0].span[0], doc[-1].span[1])
                 yield doc
 
-        docs = TextSpan(list(partition(size, remain_factor)))
+        # If no partition size provided, then consider a single document
+        if size is None or size < 1:
+            docs = TextSpan([self.sentences])
+        else:
+            docs = TextSpan(list(partition(size, remain_factor)))
+
         if len(docs) > 0:
             docs.span = (docs[0].span[0], docs[-1].span[1])
         self._docs = docs
@@ -161,26 +171,27 @@ class Author:
     def embed(self, **kwargs):
         # Reset document embeddings
         self._docs_vectors = numpy.array([])
+        self._docs_vectors_norm = numpy.array([])
 
-        self._model = EmbeddingModel(**kwargs)
-        self._model.train(self.sentences_words_str)
+        self._embedding = EmbeddingModel(**kwargs)
+        self._embedding.train(self.sentences_words_str)
 
     def embed_docs(self, **kwargs):
         # NOTE: Auto-embed with default parameters
-        if self._model is None:
+        if self._embedding is None:
             self.embed()
 
-        # Always calculate norm vectors
+        # Use norm vectors
         use_norm = kwargs.pop('use_norm', True)
-        self._docs_vectors_norm = numpy.array([
-            type(self).doc2vec(doc, self._model, **kwargs)
-            for doc in self.docs
-        ])
         if use_norm:
+            self._docs_vectors_norm = numpy.array([
+                type(self).doc2vec(doc, self._embedding, use_norm=use_norm, **kwargs)
+                for doc in self.docs
+            ])
             self._docs_vectors = self._docs_vectors_norm
         else:
             self._docs_vectors = numpy.array([
-                type(self).doc2vec(doc, self._model, **kwargs)
+                type(self).doc2vec(doc, self._embedding, use_norm=False, **kwargs)
                 for doc in self.docs
             ])
 
@@ -189,20 +200,16 @@ class Author:
         # NOTE: Ensure that parameter names do not collide.
         self.preprocess(kwargs.pop('tokenizer', Tokenizer()))
         self.partition_into_docs(
-            size=kwargs.pop('part_size', 350),
+            size=kwargs.pop('part_size', None),
             remain_factor=kwargs.pop('remain_factor', 1.),
         )
         # Extract arguments for operations after embed(), because it consumes
         # remaining kwargs.
         stopwords = kwargs.pop('stopwords', None)
         func = kwargs.pop('func', np_avg)
-        use_norm = kwargs.pop('use_norm', False)
+        use_norm = kwargs.pop('use_norm', True)
         self.embed(**kwargs)
-        self.embed_docs(
-            stopwords=stopwords,
-            func=func,
-            use_norm=use_norm,
-        )
+        self.embed_docs(stopwords=stopwords, func=func, use_norm=use_norm)
 
     def save(self, fn: str):
         """Save Author's state."""
@@ -219,7 +226,7 @@ class Author:
         *,
         stopwords: Iterable[str] = None,
         func: Callable = np_avg,
-        use_norm: bool = False,
+        use_norm: bool = True,
     ) -> numpy.array:
         if stopwords is None:
             stopwords = set()
