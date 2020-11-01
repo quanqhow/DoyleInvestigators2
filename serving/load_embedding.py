@@ -8,9 +8,9 @@ def load_pickle(fn: str):
         return pickle.load(fd)
 
 
-vectors_file = 'vectors.pickle'
-vectors_norm_file = 'vectors_norm.pickle'
-mlp_file = 'mlp.pickle'
+vectors_file = 'vectors.pkl'
+vectors_norm_file = 'vectors_norm.pkl'
+mlp_file = 'mlp.pkl'
 
 # Load document vectors and corresponding labels
 doc_vectors, labels = load_pickle(vectors_file)

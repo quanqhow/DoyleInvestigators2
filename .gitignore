@@ -1,5 +1,6 @@
 # Other
 **/*.bin
+**/*.pkl
 **/*.swp
 **/*.bak
 **/*.log
