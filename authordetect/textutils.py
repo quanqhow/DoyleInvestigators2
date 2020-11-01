@@ -34,7 +34,7 @@ def load_text(src: str, *, phony: bool = False) -> str:
         try:
             with open(src) as fd:
                 return fd.read()
-        except FileNotFoundError:
+        except (FileNotFoundError, OSError):
             pass
     return src
 
@@ -79,7 +79,7 @@ def save_pickle(data: object, fn: str):
 
     with open(fn, 'wb') as fd:
         pickle.dump(data, fd)
- 
+
 
 def merge_texts(srcs: Iterable[str], delim: str = '\n') -> str:
     """Get text content from multiple sources and join into a

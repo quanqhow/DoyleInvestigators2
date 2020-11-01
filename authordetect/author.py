@@ -1,7 +1,7 @@
 #! /usr/bin/python3
 
 import numpy
-from .textutils import load_text
+from .textutils import load_text, load_pickle, save_pickle
 from .textspan import TextSpan
 from .embedding import EmbeddingModel
 from .tokenizer import Tokenizer
@@ -24,14 +24,16 @@ class Author:
         self._corpus = load_text(corpus) if corpus else corpus
         # Print info on how is input considered so that if a filename does
         # not exists, then user can be informed.
-        if self._corpus == corpus:
-            print('Input Mode: Author corpus was provided as raw text')
-        else:
-            print('Input Mode: Author corpus is loaded from a text file')
+        if self._corpus is not None:
+            if self._corpus == corpus:
+                print('Input Mode: Author corpus was provided as raw text')
+            else:
+                print('Input Mode: Author corpus is loaded from a file')
         self._parsed = TextSpan()
         self._docs = TextSpan()
         self._model = None  # EmbeddingModel
         self._docs_vectors = numpy.array([])
+        self._docs_vectors_norm = numpy.array([])
 
     @property
     def corpus(self):
@@ -82,7 +84,11 @@ class Author:
     def docs_vectors(self):
         return self._docs_vectors
 
-    def preprocess(self, tokenizer: Tokenizer = None):
+    @property
+    def docs_vectors_norm(self):
+        return self._docs_vectors_norm
+
+    def preprocess(self, tokenizer: Tokenizer = Tokenizer()):
         # Reset because parsed corpus might have changed
         self._docs = TextSpan()
 
@@ -164,15 +170,24 @@ class Author:
         if self._model is None:
             self.embed()
 
-        self._docs_vectors = numpy.array([
+        # Always calculate norm vectors
+        use_norm = kwargs.pop('use_norm', True)
+        self._docs_vectors_norm = numpy.array([
             type(self).doc2vec(doc, self._model, **kwargs)
             for doc in self.docs
         ])
+        if use_norm:
+            self._docs_vectors = self._docs_vectors_norm
+        else:
+            self._docs_vectors = numpy.array([
+                type(self).doc2vec(doc, self._model, **kwargs)
+                for doc in self.docs
+            ])
 
     def writer2vec(self, **kwargs):
         """Pipeline for generating Author and document embeddings."""
         # NOTE: Ensure that parameter names do not collide.
-        self.preprocess(kwargs.pop('tokenizer', None))
+        self.preprocess(kwargs.pop('tokenizer', Tokenizer()))
         self.partition_into_docs(
             size=kwargs.pop('part_size', 350),
             remain_factor=kwargs.pop('remain_factor', 1.),
@@ -189,13 +204,13 @@ class Author:
             use_norm=use_norm,
         )
 
-    def save(self, author_file, doc_file):
-        """Save Author's state: author embedding, document embedding, and
-        parameters."""
-        pass
+    def save(self, fn: str):
+        """Save Author's state."""
+        save_pickle(self, fn)
 
-    def load(self, author_file, doc_file):
-        pass
+    @staticmethod
+    def load(fn: str) -> 'Author':
+        return load_pickle(fn)
 
     @staticmethod
     def doc2vec(
@@ -205,7 +220,7 @@ class Author:
         stopwords: Iterable[str] = None,
         func: Callable = np_avg,
         use_norm: bool = False,
-    ):
+    ) -> numpy.array:
         if stopwords is None:
             stopwords = set()
 

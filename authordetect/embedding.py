@@ -83,5 +83,5 @@ class EmbeddingModel:
             # self._model.save_word2vec_format(outfile)
             self._model.save(outfile)
 
-    def load(self, infile):
+    def load(self, infile: str):
         self._model = Word2Vec.load(infile)
