@@ -5,3 +5,7 @@ include requirements.txt
 include Makefile
 graft data
 graft drivers
+graft test_datasets
+graft serving
+graft lang_translation
+graft synonyms
