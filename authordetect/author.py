@@ -48,6 +48,24 @@ class Author:
     def parsed(self):
         return self._parsed
 
+    @staticmethod
+    def parse_str(corpus, words):
+        text = corpus
+        parsed_text = ''
+        for i, word in enumerate(words):
+            if i < len(words) - 1:
+                next_word = words[i+1]
+                if i == 0:
+                    parsed_text = text[:word.span[0]] + str(word) + text[word.span[1]:next_word.span[0]]
+                else:
+                    parsed_text += str(word) + text[word.span[1]:next_word.span[0]]
+            else:
+                if i == 0:
+                    parsed_text = text[:word.span[0]] + str(word) + text[word.span[1]:]
+                else:
+                    parsed_text += str(word) + text[word.span[1]:]
+        return parsed_text
+
     @property
     def words(self):
         depth = self._parsed.depth

@@ -18,7 +18,7 @@ def translate(text: str, to_country: str = 'uk', tag: bool = False):
     conversion = 'us_to_uk' if to_country == 'uk' else 'uk_to_us'
     for source, target in tables[conversion].items():
         target = f'<{source}|{target}>' if tag else target
-        text = text.replace(source, target)
+        text = re.sub(fr'\b{source}\b', target, text)
         count += len(list(re.finditer(source, text)))
     return text, count
 

@@ -2,18 +2,21 @@
 
 import sys
 from authordetect import Author, load_json, save_json
-from translate_text import translate, get_documents
+from synonym_functions import perturb_author
 
 
 if __name__ == '__main__':
-    if len(sys.argv) != 4:
-        print(f'Usage: {sys.argv[0]} lang infile outfile')
+    if len(sys.argv) < 4:
+        print(f'Usage: {sys.argv[0]} rate infile outfile [embedding.bin]')
         print('files are JSON files')
         sys.exit()
 
-    lang, infile, outfile = sys.argv[1:]
+    rate = float(sys.argv[1])
+    infile, outfile = sys.argv[2:4]
+    embedding_file = sys.argv[4] if len(sys.argv) == 5 else None
     print('Input file:', infile)
     print('Output file:', outfile)
+    print('Embedding file:', embedding_file)
 
     # Generate list of documents
     docs = load_json(infile)
@@ -23,7 +26,7 @@ if __name__ == '__main__':
     total_repl_count = 0
     perturb_freq_map = {}
     for i, doc in enumerate(docs):
-        perturbed_text, repl_count = translate(doc['text'], lang)
+        perturbed_text, repl_count = perturb_author(doc['text'], embedding_file, proportion=rate)
         author = Author(perturbed_text)
         author.preprocess()
         perturb_freq_map[i] = repl_count / len(author.words)

@@ -99,6 +99,49 @@ Python interpreter process.
   `serving/driver_train.py` script setting `seed=0`, `PYTHONHASHSEED=0`, and
   `remain_factor=350/<part_size>`.
 
+* US/UK English translation was performed to entire corpus. Some false positive
+  cases occurred due to the method for replacing text (no word boundaries considered).
+  ```shell
+  > cd lang_translation/
+  > python driver_translate.py uk ../data/Rinehart_10.txt ../data/Rinehart_10_uk.txt
+  ```
+  To view in web application, enable the `tag` option (last argument)
+  ```shell
+  > python driver_translate.py uk ../data/Rinehart_10.txt ../data/Rinehart_10_uk_tag.txt 1
+  ```
+
+* Synonym replacement were performed using the embedding models of 50 dimension
+  and corresponding document partition size.
+  ```shell
+  > cd synonyms/
+  > python driver_synonyms.py 0 0.2 ../data/Rinehart_10.txt ../data/Rinehart_10_syn_350.txt ../serving/doyle_50dim_350part.bin
+  ```
+  To view in web application, enable the `tag` option (first argument)
+  ```shell
+  > python driver_synonyms.py 1 0.2 ../data/Rinehart_10.txt ../data/Rinehart_10_syn_350_tag.txt
+  ```
+
+* Test datasets JSON files were created by combining the 10\% perturbed files.
+  This script takes multiple text files with corresponding labels and partitions
+  them into documents, then shuffles them and exports list of files to a JSON file.
+  ```shell
+  > cd test_datasets/
+  > python driver_create_json.py 350 perturbed_langtranslation_rinehart_350.json ../data/Doyle_10_uk.txt doyle ../data/Christie_10_uk.txt christie ../data/Rinehart_10_uk.txt rinehart
+  ```
+
+* There are helper scripts to compute frequency of perturbations for making plots.
+  First you need to create JSON file of the original corpus.
+  For example, for language translation:
+  ```shell
+  > cd test_datasets/
+  > python driver_create_json.py 350 original_rinehart_350.json ../data/Rinehart_10.txt rinehart
+  ```
+  Then, process them with `freq` script to the corresponding perturbation,
+  ```shell
+  > cd lang_translation/
+  > python driver_freq_translate.py uk ../test_datasets/original_rinehart_3500.json perturb_rate_langtranslation_rinehart_3500.json
+  ```
+
 
 ## Novels and Short Stories
 
