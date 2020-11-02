@@ -1,20 +1,20 @@
 #! /usr/bin/python3
 
-from authordetect import Tokenizer, save_pickle
+from authordetect import Tokenizer, save_pickle, np_avg, np_sum
 from train_classifier import train_classifier
-from document_embedding import get_document_embeddings, split_combine_data, flatten
+from writer2vec import writer2vec, split_combine_data, flatten
 
 
 ######################
 # User Configuration #
 ######################
 seed = 0  # int, None
-tokenizer = Tokenizer(min_token_length=1, use_stopwords=False)
-stopwords = Tokenizer.STOPWORDS
 mlp_file = 'mlp.pkl'
 # mlp_file = None
+embedding_file = 'doyle.bin'
 
 
+# Positive author first
 train_data = [
     '../data/Doyle_90.txt',
     '../data/Rinehart_90.txt',
@@ -24,9 +24,6 @@ train_labels = [1, 0, 0]
 
 
 writer2vec_params = {
-    # Preprocess
-    'tokenizer': tokenizer,
-
     # Document partitioning
     'part_size': 350,  # int, None
 
@@ -45,8 +42,10 @@ writer2vec_params = {
     'iter': 10,
 
     # doc2vec
-    'stopwords': stopwords,  # iterable[str], None
+    'stopwords': Tokenizer.STOPWORDS,  # iterable[str], None
+    'func': np_avg,  # callable
     'use_norm': True,  # bool
+    'missing_value': 0,  # int
 }
 
 # Train/test data split - Parameters passed directly to sklearn.model_selection.train_test_split
@@ -77,7 +76,7 @@ mlp_params = {
 # Processing #
 ##############
 # Document vectors and labels
-vectors, labels = get_document_embeddings(train_data, train_labels, **writer2vec_params)
+vectors, labels = writer2vec(train_data, train_labels, outfiles=embedding_file, **writer2vec_params)
 
 # Fraction select (50% of 90% for positive, 25% of 90% for each negative)
 vectors, labels = split_combine_data(vectors, labels, seed=seed)

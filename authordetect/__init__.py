@@ -1,5 +1,5 @@
 from .textspan import TextSpan
-from .author import Author
+from .author import Author, np_avg, np_sum
 from .tokenizer import Tokenizer
 from .embedding import EmbeddingModel
 from .classifier import Classifier

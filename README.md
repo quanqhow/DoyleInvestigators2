@@ -17,6 +17,7 @@ a dataset of Sherlock Holmes novels and short stories.
   * gensim
   * scikit-learn
   * numpy
+  * bs4
 
 
 ### Google Colab Install

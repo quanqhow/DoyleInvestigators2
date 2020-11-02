@@ -1,53 +1,39 @@
 #! /usr/bin/python3
 
-from authordetect import Tokenizer, load_pickle
+from authordetect import Tokenizer, EmbeddingModel, load_pickle, np_avg, np_sum
 from predict_classifier import predict
-from document_embedding import get_document_embeddings, flatten
+from writer2vec import writer2vec, flatten
 
 
 ######################
 # User Configuration #
 ######################
-seed = 0  # int, None
-tokenizer = Tokenizer(min_token_length=1, use_stopwords=False)
-stopwords = Tokenizer.STOPWORDS
 mlp_file = 'mlp.pkl'
+embedding_file = 'doyle.bin'
 
-
-# Single document
-test_data = '../data/Doyle_10.txt'
-test_label = 1
-
+test_data = '../data/Doyle_90.txt'
+test_label = 0
 
 writer2vec_params = {
-    # Preprocess
-    'tokenizer': tokenizer,
-
-    # word2vec - Parameters passed directly to gensim.models.Word2Vec
-    # https://radimrehurek.com/gensim/models/word2vec.html#gensim.models.word2vec.Word2Vec
-    'size': 50,
-    'window': 5,
-    'min_count': 1,
-    'sg': 0,
-    'hs': 0,
-    'negative': 20,
-    'alpha': 0.03,
-    'min_alpha': 0.0007,
-    'seed': seed,
-    'sample': 6e-5,
-    'iter': 10,
+    'part_size': 350,
 
     # doc2vec
-    'stopwords': stopwords,  # iterable[str], None
+    'stopwords': Tokenizer.STOPWORDS,  # iterable[str], None
+    'func': np_avg,  # callable
     'use_norm': True,  # bool
+    'missing_value': 0,  # int
 }
 
 
 ##############
 # Processing #
 ##############
+# Load embedding model
+embedding = EmbeddingModel()
+embedding.load(embedding_file)
+
 # Document vectors and labels
-vectors, labels = get_document_embeddings(test_data, test_label, **writer2vec_params)
+vectors, labels = writer2vec(test_data, test_label, embedding=embedding, **writer2vec_params)
 
 # Flatten data
 test_vectors = flatten(vectors)

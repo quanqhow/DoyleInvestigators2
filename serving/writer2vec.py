@@ -7,7 +7,14 @@ from authordetect import Author
 from typing import Any, Union, Iterable
 
 
-def get_document_embeddings(data: Union[str, Iterable[str]], labels: Iterable[Any], **kwargs):
+def writer2vec(
+    data: Union[str, Iterable[str]],
+    labels: Iterable[Any],
+    outfiles: Union[str, Iterable[str]] = None,  # filenames for embedding matrices
+    *,
+    embedding: 'EmbeddingModel' = None,
+    **kwargs,
+):
     if isinstance(data, str):
         data = [data]
         labels = [labels]
@@ -15,7 +22,7 @@ def get_document_embeddings(data: Union[str, Iterable[str]], labels: Iterable[An
     authors = []
     for i, (corpus, label) in enumerate(zip(data, labels), start=1):
         author = Author(corpus, label)
-        author.writer2vec(**kwargs)
+        author.writer2vec(embedding=embedding, **kwargs)
         authors.append(author)
 
     vectors = []
@@ -23,6 +30,13 @@ def get_document_embeddings(data: Union[str, Iterable[str]], labels: Iterable[An
     for author in authors:
         vectors.append(author.docs_vectors)
         labels.append([author.label] * len(author.docs_vectors))
+
+    if outfiles:
+        if isinstance(outfiles, str):
+            outfiles = [outfiles]
+        for author, outfile in zip(authors, outfiles):
+            if outfile:
+                author.embedding.save(outfile)
 
     return vectors, labels
 

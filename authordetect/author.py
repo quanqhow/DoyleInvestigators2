@@ -168,18 +168,21 @@ class Author:
             docs.span = (docs[0].span[0], docs[-1].span[1])
         self._docs = docs
 
-    def embed(self, **kwargs):
+    def embed(self, embedding=None, **kwargs):
         # Reset document embeddings
         self._docs_vectors = numpy.array([])
         self._docs_vectors_norm = numpy.array([])
 
-        self._embedding = EmbeddingModel(**kwargs)
-        self._embedding.train(self.sentences_words_str)
+        if embedding is None:
+            self._embedding = EmbeddingModel(**kwargs)
+            self._embedding.train(self.sentences_words_str)
+        else:
+            self._embedding = embedding
 
-    def embed_docs(self, **kwargs):
+    def embed_docs(self, embedding=None, **kwargs):
         # NOTE: Auto-embed with default parameters
-        if self._embedding is None:
-            self.embed()
+        if self._embedding is None or embedding is not None:
+            self.embed(embedding)
 
         # Use norm vectors
         use_norm = kwargs.pop('use_norm', True)
@@ -208,8 +211,14 @@ class Author:
         stopwords = kwargs.pop('stopwords', None)
         func = kwargs.pop('func', np_avg)
         use_norm = kwargs.pop('use_norm', True)
+        missing_value = kwargs.pop('missing_value', 0)
         self.embed(**kwargs)
-        self.embed_docs(stopwords=stopwords, func=func, use_norm=use_norm)
+        self.embed_docs(
+            stopwords=stopwords,
+            func=func,
+            use_norm=use_norm,
+            missing_value=missing_value,
+        )
 
     def save(self, fn: str):
         """Save Author's state."""
@@ -227,6 +236,7 @@ class Author:
         stopwords: Iterable[str] = None,
         func: Callable = np_avg,
         use_norm: bool = True,
+        missing_value: float = 0.,
     ) -> numpy.array:
         if stopwords is None:
             stopwords = set()
@@ -234,8 +244,12 @@ class Author:
         if isinstance(model, EmbeddingModel):
             model = model.model
 
-        return func(numpy.array([
-            model.wv.word_vec(word, use_norm)
-            for word in doc.tokens
-            if word not in stopwords
-        ]))
+            missing_vector = numpy.empty(model.vector_size)
+            missing_vector.fill(missing_value)
+            vectors = []
+            for word in doc.tokens:
+                if word in stopwords or word not in model.wv:
+                    vectors.append(missing_vector)
+                else:
+                    vectors.append(model.wv.word_vec(word, use_norm))
+        return func(numpy.array(vectors))
