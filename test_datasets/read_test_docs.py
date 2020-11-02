@@ -1,3 +1,5 @@
+#! /usr/bin/python3
+
 import json
 
 
@@ -6,8 +8,15 @@ def load_corpus(fn: str) -> list:
         return json.load(fd)
 
 
+LABEL_MAP = {
+    'doyle': 1,
+    'christie': 0,
+    'rinehart': 0,
+}
+
+
 if __name__ == '__main__':
-    test_file = 'doyle_to_rinehart_350_synonyms.json'
+    test_file = 'perturbed_langtranslation_rinehart_350.json'
 
     # Load documents from JSON file
     docs = load_corpus(test_file)
@@ -18,5 +27,6 @@ if __name__ == '__main__':
     # Process documents
     # Each document is represented as a dictionary with a 'label' and 'text' field
     for i, doc in enumerate(docs):
-        print('Processing document', i, 'with label', doc['label'], '...')
+        label = LABEL_MAP[doc['label'].lower()]
+        print('Processing document', i, 'with label', label, '...')
         # print(doc['text'])
