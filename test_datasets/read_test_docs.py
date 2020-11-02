@@ -1,5 +1,6 @@
 #! /usr/bin/python3
 
+import sys
 import json
 
 
@@ -16,17 +17,21 @@ LABEL_MAP = {
 
 
 if __name__ == '__main__':
-    test_file = 'perturbed_langtranslation_rinehart_350.json'
+    if len(sys.argv) < 2:
+        print(f'Usage: {sys.argv[0]} infile')
+        sys.exit()
+
+    infile = sys.argv[1]
+    print('Input file:', infile)
 
     # Load documents from JSON file
-    docs = load_corpus(test_file)
-    num_docs = len(docs)
+    docs = load_corpus(infile)
 
-    print('Loaded', num_docs, 'documents for testing')
+    print('Loaded', len(docs), 'documents for testing')
 
     # Process documents
     # Each document is represented as a dictionary with a 'label' and 'text' field
-    for i, doc in enumerate(docs):
-        label = LABEL_MAP[doc['label'].lower()]
-        print('Processing document', i, 'with label', label, '...')
-        # print(doc['text'])
+    # for i, doc in enumerate(docs):
+    #     label = LABEL_MAP[doc['label'].lower()]
+    #     print('Processing document', i, 'with label', label, '...')
+    #     print(doc['text'])
