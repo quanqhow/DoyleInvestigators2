@@ -12,8 +12,10 @@ if __name__ == '__main__':
 
     lang, infile, outfile = sys.argv[1:4]
     tag = sys.argv[4] if len(sys.argv) > 4 else False
+    print('Input file:', infile)
+    print('Output file:', outfile)
 
     source_text = load_text(infile)
-    translated_text = translate(source_text, lang, tag)
+    translated_text, _ = translate(source_text, lang, tag)
 
     save_text(translated_text, outfile)

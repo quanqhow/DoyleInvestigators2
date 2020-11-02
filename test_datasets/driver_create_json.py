@@ -11,9 +11,11 @@ def save_corpus(data: list, fn: str):
         json.dump(data, fd)
 
 
-def get_documents(corpus_labels, part_size):
+def get_documents(corpus_and_labels, part_size):
+    if isinstance(corpus_and_labels, str):
+        corpus_and_labels = [(corpus_and_labels, None)]
     docs = []
-    for corpus, label in corpus_labels:
+    for corpus, label in corpus_and_labels:
         author = Author(corpus, label)
         author.preprocess()
         author.partition_into_docs(part_size)
@@ -41,6 +43,7 @@ if __name__ == '__main__':
         corpus, label = sys.argv[i:i+2]
         corpus_and_labels.append((corpus, label))
     print('Data:', corpus_and_labels)
+    print('Output file:', outfile)
 
     # Generate list of documents
     docs = get_documents(corpus_and_labels, part_size)
