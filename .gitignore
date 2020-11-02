@@ -1,7 +1,7 @@
 # Other
 pubmed_abstracts
-**/*.bin
-**/*.pkl
+# **/*.bin
+# **/*.pkl
 **/*.swp
 **/*.bak
 **/*.log

@@ -8,7 +8,6 @@ def load_corpus(fn: str) -> list:
 
 if __name__ == '__main__':
     test_file = 'doyle_to_rinehart_350_synonyms.json'
-    doc_size = 350
 
     # Load documents from JSON file
     docs = load_corpus(test_file)

@@ -11,8 +11,8 @@ from writer2vec import writer2vec, flatten
 mlp_file = 'mlp.pkl'
 embedding_file = 'doyle.bin'
 
-test_data = '../data/Doyle_90.txt'
-test_label = 0
+test_data = '../data/Doyle_10.txt'
+test_label = 1
 
 writer2vec_params = {
     'part_size': 350,

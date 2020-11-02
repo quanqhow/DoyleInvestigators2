@@ -9,9 +9,10 @@ from writer2vec import writer2vec, split_combine_data, flatten
 # User Configuration #
 ######################
 seed = 0  # int, None
-mlp_file = 'mlp.pkl'
-# mlp_file = None
-embedding_file = 'doyle.bin'
+# mlp_file = 'mlp.pkl'
+mlp_file = None
+# embedding_file = 'doyle.bin'
+embedding_file = None
 
 
 # Positive author first
@@ -26,10 +27,11 @@ train_labels = [1, 0, 0]
 writer2vec_params = {
     # Document partitioning
     'part_size': 350,  # int, None
+    # 'remain_factor': 350/350,  # float [0,1], default=1
 
     # word2vec - Parameters passed directly to gensim.models.Word2Vec
     # https://radimrehurek.com/gensim/models/word2vec.html#gensim.models.word2vec.Word2Vec
-    'size': 50,
+    'size': 300,
     'window': 5,
     'min_count': 1,
     'sg': 0,

@@ -93,6 +93,13 @@ Python interpreter process.
   ```
 
 
+## Datasets and Models
+
+* MLP classifier models and author embeddings were created with the
+  `serving/driver_train.py` script setting `seed=0`, `PYTHONHASHSEED=0`, and
+  `remain_factor=350/<part_size>`.
+
+
 ## Novels and Short Stories
 
 * Selection should have 300K +- 10% words in total.
