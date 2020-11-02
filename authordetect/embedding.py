@@ -1,6 +1,5 @@
 #! /usr/bin/python3
 
-import os
 # import multiprocessing
 import psutil
 from gensim.models import Word2Vec
@@ -12,24 +11,30 @@ __all__ = ['EmbeddingModel']
 
 class EmbeddingModel:
     def __init__(self, **kwargs):
-        self._params = None
-
         # Prevent from training during initialization, use train()
         kwargs.pop('sentences', None)
         kwargs.pop('corpus_file', None)
+
+        # Handle seeding consistently
+        seed = kwargs.pop('seed', None)
+        if seed is None:
+            seed = 1  # Gensim's default value
+            workers = kwargs.pop('workers', psutil.cpu_count(False))
+            # workers=kwargs.pop('workers', multiprocessing.cpu_count() / 2)
+        else:
+            workers = kwargs.pop('workers', 1)
 
         self._model = Word2Vec(
             size=kwargs.pop('size', 50),
             window=kwargs.pop('window', 5),
             min_count=kwargs.pop('min_count', 1),
-            # workers=kwargs.pop('workers', multiprocessing.cpu_count() / 2),
-            workers=kwargs.pop('workers', psutil.cpu_count(False)),
+            workers=workers,
             sg=kwargs.pop('sg', 0),
             hs=kwargs.pop('hs', 0),
             negative=kwargs.pop('negative', 20),
             alpha=kwargs.pop('alpha', 0.03),
             min_alpha=kwargs.pop('min_alpha', 0.0007),
-            seed=kwargs.pop('seed', 0),
+            seed=seed,
             max_vocab_size=kwargs.pop('max_vocab_size', None),
             max_final_vocab=kwargs.pop('max_final_vocab', None),
             sample=kwargs.pop('sample', 6e-5),
@@ -66,7 +71,7 @@ class EmbeddingModel:
         self._model.train(
             sentences,
             total_examples=kwargs.pop('total_examples', self._model.corpus_count),
-            epochs=kwargs.pop('epochs', self._model.iter),
+            epochs=kwargs.pop('epochs', self._model.epochs),
             report_delay=kwargs.pop('report_delay', 1),
             **kwargs,
         )

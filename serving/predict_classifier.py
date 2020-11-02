@@ -2,17 +2,14 @@
 
 from authordetect import load_pickle
 from sklearn.metrics import f1_score, precision_recall_fscore_support
-from typing import Any, Union, Iterable
+from typing import Any, Iterable
 
 
 def predict(
-    mlp: Union[str, 'MLPClassifier'],
+    mlp: 'MLPClassifier',
     vectors: Iterable[Iterable[float]],
     true_labels: Iterable[Any] = None,
 ):
-    if isinstance(mlp, str):
-        mlp = load_pickle(mlp)
-
     predict_labels = mlp.predict(vectors)
     probabilities = mlp.predict_proba(vectors)
 

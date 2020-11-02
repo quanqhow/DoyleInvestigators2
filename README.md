@@ -65,6 +65,10 @@ The most relevant classes are:
   classifier and is used to train on document vectors (with corresponding
   lables). Afterwards, it can provide predictions on new document vectors.
 
+For reproducible results, set the `seed` paramater during training and prediction.
+Also, set environment variable `PYTHONHASHSEED` to an integer prior to launching
+Python interpreter process.
+
 
 ## Usage
 

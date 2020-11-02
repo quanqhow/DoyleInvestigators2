@@ -62,6 +62,7 @@ for name, author in zip(names, authors):
         part_size=part_size,
         workers=workers,
         seed=seed,
+        use_norm=True,
     )
     t.toc()
 for name, author in zip(names, authors):

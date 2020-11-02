@@ -1,6 +1,8 @@
 #! /usr/bin/python3
 
+import numpy
 from authordetect import Author, Tokenizer, SmartTimer, load_pickle
+from sklearn.metrics import f1_score, precision_recall_fscore_support
 
 # NOTE: Set PYTHONHASHSEED to constant value to have deterministic hashing
 # across Python interpreter processes.
@@ -12,12 +14,12 @@ from authordetect import Author, Tokenizer, SmartTimer, load_pickle
 # User Configuration #
 ######################
 # infile = 'https://www.gutenberg.org/files/244/244-0.txt'
-# infile = 'https://www.gutenberg.org/files/863/863-0.txt'
-infile = '../data/Doyle_10.txt'
+# label = 1
+infile = 'https://www.gutenberg.org/files/863/863-0.txt'
+label = 0
 part_size = 350
 workers = 4
 seed = None # 0
-label = 1
 
 
 ##############
@@ -37,6 +39,7 @@ author.writer2vec(
     part_size=part_size,
     workers=workers,
     seed=seed,
+    use_norm=True,
 )
 t.toc()
 
@@ -50,7 +53,7 @@ print('Embedding matrix:', author.model.vectors.shape)
 print('Documents embedding matrix:', author.docs_vectors.shape)
 
 test_vectors = author.docs_vectors
-test_labels = [label] * len(test_vectors)
+test_labels = numpy.array([label] * len(test_vectors))
 print('Test vectors:', len(test_vectors))
 print('Test labels:', len(test_labels))
 
@@ -59,12 +62,23 @@ mlp = load_pickle('mlp.pkl')
 t.toc()
 
 t.tic('MLP Prediction')
-predictions = mlp.predict(test_vectors)
+predict_labels = mlp.predict(test_vectors)
+probabilities = mlp.predict_proba(test_vectors)
 score = mlp.score(test_vectors, test_labels)
+f1 = f1_score(test_labels, predict_labels, zero_division=1)
+precision, recall, fbeta, support = precision_recall_fscore_support(
+    test_labels, predict_labels, zero_division=1
+)
 t.toc()
-print('Predictions:', predictions)
+print('Predictions:', predict_labels)
 print('Test labels:', test_labels)
+print('Probabilities:', probabilities)
 print('Score:', score)
+print('F1 score:', f1)
+print('Precision:', precision)
+print('Recall:', recall)
+print('F-beta score:', fbeta)
+print('Support:', support)
 
 print('Walltime:', t.walltime)
 print(t)

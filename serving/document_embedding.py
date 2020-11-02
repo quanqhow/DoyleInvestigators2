@@ -7,7 +7,7 @@ from authordetect import Author
 from typing import Any, Union, Iterable
 
 
-def writer2vec(data: Union[str, Iterable[str]], labels: Iterable[Any], **kwargs):
+def get_document_embeddings(data: Union[str, Iterable[str]], labels: Iterable[Any], **kwargs):
     if isinstance(data, str):
         data = [data]
         labels = [labels]

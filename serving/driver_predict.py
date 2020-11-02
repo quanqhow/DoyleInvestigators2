@@ -1,9 +1,8 @@
 #! /usr/bin/python3
 
-import os
 from authordetect import Tokenizer, load_pickle
 from predict_classifier import predict
-from writer2vec import writer2vec, flatten
+from document_embedding import get_document_embeddings, flatten
 
 
 ######################
@@ -12,11 +11,7 @@ from writer2vec import writer2vec, flatten
 seed = 0  # int, None
 tokenizer = Tokenizer(min_token_length=1, use_stopwords=False)
 stopwords = Tokenizer.STOPWORDS
-mlp_file = 'mlp_50dim_350part.pkl'
-
-threads = 4 if seed is None else 1
-if seed is not None:
-    os.environ['PYTHONHASHSEED'] = str(seed)
+mlp_file = 'mlp.pkl'
 
 
 # Single document
@@ -33,7 +28,6 @@ writer2vec_params = {
     'size': 50,
     'window': 5,
     'min_count': 1,
-    'workers': threads,
     'sg': 0,
     'hs': 0,
     'negative': 20,
@@ -53,14 +47,17 @@ writer2vec_params = {
 # Processing #
 ##############
 # Document vectors and labels
-vectors, labels = writer2vec(test_data, test_label, **writer2vec_params)
+vectors, labels = get_document_embeddings(test_data, test_label, **writer2vec_params)
 
 # Flatten data
 test_vectors = flatten(vectors)
 test_labels = flatten(labels)
 
+# Load classifier model
+mlp = load_pickle(mlp_file)
+
 # Predict
-predict_labels, classes, probabilities, metrics = predict(mlp_file, test_vectors, test_labels)
+predict_labels, classes, probabilities, metrics = predict(mlp, test_vectors, test_labels)
 print('True:', test_labels)
 print('Predict:', predict_labels)
 print('Classes:', classes)

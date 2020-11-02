@@ -5,7 +5,7 @@ from .textutils import load_text, load_pickle, save_pickle
 from .textspan import TextSpan
 from .embedding import EmbeddingModel
 from .tokenizer import Tokenizer
-from typing import Union, Iterable, Callable
+from typing import Any, Union, Iterable, Callable
 
 
 __all__ = ['Author']
@@ -20,7 +20,7 @@ def np_sum(data: numpy.ndarray):
 
 
 class Author:
-    def __init__(self, corpus: str, label: int):
+    def __init__(self, corpus: str, label: Any = None):
         self._corpus = load_text(corpus) if corpus else corpus
         # Print info on how is input considered so that if a filename does
         # not exists, then user can be informed.

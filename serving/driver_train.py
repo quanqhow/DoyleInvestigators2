@@ -1,9 +1,8 @@
 #! /usr/bin/python3
 
-import os
 from authordetect import Tokenizer, save_pickle
 from train_classifier import train_classifier
-from writer2vec import writer2vec, split_combine_data, flatten
+from document_embedding import get_document_embeddings, split_combine_data, flatten
 
 
 ######################
@@ -12,12 +11,8 @@ from writer2vec import writer2vec, split_combine_data, flatten
 seed = 0  # int, None
 tokenizer = Tokenizer(min_token_length=1, use_stopwords=False)
 stopwords = Tokenizer.STOPWORDS
-# mlp_file = 'mlp_50dim_350part.pkl'
-mlp_file = None
-
-threads = 4 if seed is None else 1
-if seed is not None:
-    os.environ['PYTHONHASHSEED'] = str(seed)
+mlp_file = 'mlp.pkl'
+# mlp_file = None
 
 
 train_data = [
@@ -40,7 +35,6 @@ writer2vec_params = {
     'size': 50,
     'window': 5,
     'min_count': 1,
-    'workers': threads,
     'sg': 0,
     'hs': 0,
     'negative': 20,
@@ -83,7 +77,7 @@ mlp_params = {
 # Processing #
 ##############
 # Document vectors and labels
-vectors, labels = writer2vec(train_data, train_labels, **writer2vec_params)
+vectors, labels = get_document_embeddings(train_data, train_labels, **writer2vec_params)
 
 # Fraction select (50% of 90% for positive, 25% of 90% for each negative)
 vectors, labels = split_combine_data(vectors, labels, seed=seed)
