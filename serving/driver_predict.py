@@ -15,7 +15,9 @@ test_data = '../data/Doyle_10.txt'
 test_label = 1
 
 writer2vec_params = {
-    'part_size': 350,
+    # Document partitioning
+    'part_size': 350,  # int, None=for standalong documents
+    # 'remain_factor': 350/350,  # float [0,1], default=1
 
     # doc2vec
     'stopwords': Tokenizer.STOPWORDS,  # iterable[str], None

@@ -26,12 +26,12 @@ train_labels = [1, 0, 0]
 
 writer2vec_params = {
     # Document partitioning
-    'part_size': 350,  # int, None
+    'part_size': 350,  # int, None=for standalong documents
     # 'remain_factor': 350/350,  # float [0,1], default=1
 
     # word2vec - Parameters passed directly to gensim.models.Word2Vec
     # https://radimrehurek.com/gensim/models/word2vec.html#gensim.models.word2vec.Word2Vec
-    'size': 300,
+    'size': 50,
     'window': 5,
     'min_count': 1,
     'sg': 0,
