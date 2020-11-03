@@ -5,8 +5,8 @@ include requirements.txt
 include Makefile
 include Doyle_Corpus_Extraction.ipynb
 graft data
-graft test_datasets
-graft serving
+graft training
 graft lang_translation
 graft synonyms
 graft embeddings
+graft test_datasets

@@ -149,7 +149,7 @@ Python interpreter process.
 ## Datasets and Models
 
 * MLP classifier models and author embeddings were created with the
-  `serving/driver_train.py` script setting `seed=0`, `PYTHONHASHSEED=0`, and
+  `training/driver_train.py` script setting `seed=0`, `PYTHONHASHSEED=0`, and
   `remain_factor=350/<part_size>`.
 
 * US/UK English translation was performed to entire corpus.
@@ -166,7 +166,7 @@ Python interpreter process.
   and corresponding document partition size.
   ```shell
   > cd synonyms/
-  > python driver_synonyms.py 0 0.2 ../data/Rinehart_10.txt ../data/Rinehart_10_syn_350.txt ../serving/doyle_50dim_350part.bin
+  > python driver_synonyms.py 0 0.2 ../data/Rinehart_10.txt ../data/Rinehart_10_syn_350.txt ../training/doyle_50dim_350part.bin
   ```
   To view in web application, enable the `tag` option (first argument)
   ```shell
