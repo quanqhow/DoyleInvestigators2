@@ -23,6 +23,7 @@ sdist:
 
 clean:
 	find . \( -name __pycache__ -o -name "*.py?" \) -print0 | xargs -0 rm -rf
+	find . -name "vim-markdown-preview*" -print0 | xargs -0 rm -rf
 	rm -rf flake8.out
 	rm -rf *.egg-info .eggs
 	rm -rf .tox
