@@ -1,11 +1,11 @@
 #! /usr/bin/python3
 
 import numpy
-from .textutils import load_text
+from .textutils import load_text, load_pickle, save_pickle
 from .textspan import TextSpan
 from .embedding import EmbeddingModel
 from .tokenizer import Tokenizer
-from typing import Union, Iterable, Callable
+from typing import Any, Union, Iterable, Callable
 
 
 __all__ = ['Author']
@@ -20,26 +20,51 @@ def np_sum(data: numpy.ndarray):
 
 
 class Author:
-    def __init__(self, corpus: str = None):
+    def __init__(self, corpus: str, label: Any = None):
         self._corpus = load_text(corpus) if corpus else corpus
         # Print info on how is input considered so that if a filename does
         # not exists, then user can be informed.
-        if self._corpus == corpus:
-            print('Input Mode: Author corpus was provided as raw text')
-        else:
-            print('Input Mode: Author corpus is loaded from a text file')
+        if self._corpus is not None:
+            if self._corpus == corpus:
+                print('Author corpus was provided as raw text')
+            else:
+                print('Author corpus will be loaded from a file')
+        self._label = label
         self._parsed = TextSpan()
         self._docs = TextSpan()
-        self._model = None  # EmbeddingModel
+        self._embedding = None  # EmbeddingModel
         self._docs_vectors = numpy.array([])
+        self._docs_vectors_norm = numpy.array([])
 
     @property
     def corpus(self):
         return self._corpus
 
     @property
+    def label(self):
+        return self._label
+
+    @property
     def parsed(self):
         return self._parsed
+
+    @staticmethod
+    def parse_str(corpus, words):
+        text = corpus
+        parsed_text = ''
+        for i, word in enumerate(words):
+            if i < len(words) - 1:
+                next_word = words[i+1]
+                if i == 0:
+                    parsed_text = text[:word.span[0]] + str(word) + text[word.span[1]:next_word.span[0]]
+                else:
+                    parsed_text += str(word) + text[word.span[1]:next_word.span[0]]
+            else:
+                if i == 0:
+                    parsed_text = text[:word.span[0]] + str(word) + text[word.span[1]:]
+                else:
+                    parsed_text += str(word) + text[word.span[1]:]
+        return parsed_text
 
     @property
     def words(self):
@@ -75,14 +100,18 @@ class Author:
         return list(list(s.iter_tokens()) for s in self.sentences)
 
     @property
-    def model(self):
-        return self._model
+    def embedding(self):
+        return self._embedding
 
     @property
     def docs_vectors(self):
         return self._docs_vectors
 
-    def preprocess(self, tokenizer: Tokenizer = None):
+    @property
+    def docs_vectors_norm(self):
+        return self._docs_vectors_norm
+
+    def preprocess(self, tokenizer: Tokenizer = Tokenizer()):
         # Reset because parsed corpus might have changed
         self._docs = TextSpan()
 
@@ -110,7 +139,7 @@ class Author:
             self._parsed = sents
 
 
-    def partition_into_docs(self, size: int = 350, remain_factor: float = 1.):
+    def partition_into_docs(self, size: int = None, remain_factor: float = 1.):
         """Partition text into documents of a specified token count."""
         def partition(size, remain_factor):
             # Limit lower bound of size
@@ -147,55 +176,75 @@ class Author:
                 doc.span = (doc[0].span[0], doc[-1].span[1])
                 yield doc
 
-        docs = TextSpan(list(partition(size, remain_factor)))
+        # If no partition size provided, then consider a single document
+        if size is None or size < 1:
+            docs = TextSpan([self.sentences])
+        else:
+            docs = TextSpan(list(partition(size, remain_factor)))
+
         if len(docs) > 0:
             docs.span = (docs[0].span[0], docs[-1].span[1])
         self._docs = docs
 
-    def embed(self, **kwargs):
+    def embed(self, embedding=None, **kwargs):
         # Reset document embeddings
         self._docs_vectors = numpy.array([])
+        self._docs_vectors_norm = numpy.array([])
 
-        self._model = EmbeddingModel(**kwargs)
-        self._model.train(self.sentences_words_str)
+        if embedding is None:
+            self._embedding = EmbeddingModel(**kwargs)
+            self._embedding.train(self.sentences_words_str)
+        else:
+            self._embedding = embedding
 
-    def embed_docs(self, **kwargs):
+    def embed_docs(self, embedding=None, **kwargs):
         # NOTE: Auto-embed with default parameters
-        if self._model is None:
-            self.embed()
+        if self._embedding is None or embedding is not None:
+            self.embed(embedding)
 
-        self._docs_vectors = numpy.array([
-            type(self).doc2vec(doc, self._model, **kwargs)
-            for doc in self.docs
-        ])
+        # Use norm vectors
+        use_norm = kwargs.pop('use_norm', True)
+        if use_norm:
+            self._docs_vectors_norm = numpy.array([
+                type(self).doc2vec(doc, self._embedding, use_norm=use_norm, **kwargs)
+                for doc in self.docs
+            ])
+            self._docs_vectors = self._docs_vectors_norm
+        else:
+            self._docs_vectors = numpy.array([
+                type(self).doc2vec(doc, self._embedding, use_norm=False, **kwargs)
+                for doc in self.docs
+            ])
 
     def writer2vec(self, **kwargs):
         """Pipeline for generating Author and document embeddings."""
         # NOTE: Ensure that parameter names do not collide.
-        self.preprocess(kwargs.pop('tokenizer', None))
+        self.preprocess(kwargs.pop('tokenizer', Tokenizer()))
         self.partition_into_docs(
-            size=kwargs.pop('part_size', 350),
+            size=kwargs.pop('part_size', None),
             remain_factor=kwargs.pop('remain_factor', 1.),
         )
         # Extract arguments for operations after embed(), because it consumes
         # remaining kwargs.
         stopwords = kwargs.pop('stopwords', None)
         func = kwargs.pop('func', np_avg)
-        use_norm = kwargs.pop('use_norm', False)
+        use_norm = kwargs.pop('use_norm', True)
+        missing_value = kwargs.pop('missing_value', 0)
         self.embed(**kwargs)
         self.embed_docs(
             stopwords=stopwords,
             func=func,
             use_norm=use_norm,
+            missing_value=missing_value,
         )
 
-    def save(self, author_file, doc_file):
-        """Save Author's state: author embedding, document embedding, and
-        parameters."""
-        pass
+    def save(self, fn: str):
+        """Save Author's state."""
+        save_pickle(self, fn)
 
-    def load(self, author_file, doc_file):
-        pass
+    @staticmethod
+    def load(fn: str) -> 'Author':
+        return load_pickle(fn)
 
     @staticmethod
     def doc2vec(
@@ -204,16 +253,21 @@ class Author:
         *,
         stopwords: Iterable[str] = None,
         func: Callable = np_avg,
-        use_norm: bool = False,
-    ):
+        use_norm: bool = True,
+        missing_value: float = 0.,
+    ) -> numpy.array:
         if stopwords is None:
             stopwords = set()
 
         if isinstance(model, EmbeddingModel):
             model = model.model
 
-        return func(numpy.array([
-            model.wv.word_vec(word, use_norm)
-            for word in doc.tokens
-            if word not in stopwords
-        ]))
+            missing_vector = numpy.empty(model.vector_size)
+            missing_vector.fill(missing_value)
+            vectors = []
+            for word in doc.tokens:
+                if word in stopwords or word not in model.wv:
+                    vectors.append(missing_vector)
+                else:
+                    vectors.append(model.wv.word_vec(word, use_norm))
+        return func(numpy.array(vectors))

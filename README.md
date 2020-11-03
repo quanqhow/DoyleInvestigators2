@@ -4,26 +4,50 @@ This project constructs a binary classifier for Sir Arthur Conan Doyle using
 a dataset of Sherlock Holmes novels and short stories.
 
 
+## General Information
+
+The `authordetect` package follows a modular object-oriented approach.
+The most relevant classes are:
+* `Author` (*authordetect/author.py*) - This class represents a corpus
+  corresponding to a single author and provides capabilities to load and
+  tokenize corpus, partition into documents, create embedding models for author
+  and each document. All these actions are part of the `writer2vec` algorithm
+  (see Overleaf paper), and a method with the same name is provided that
+  applies these transformations as a single step.
+* `Tokenizer` (*authordetect/tokenizer.py*) - This class represents a tokenizer
+  for performing sentence segmentation and tokenization of an `Author's`
+  corpus. It also contains a list of stopwords (from NLTK).
+* EmbeddingModel (*authordetect/embedding.py*) - This class represents a
+  vector embedding model and is a wrapper over Gensim's Word2Vec with added
+  capabilities to save/load embeddings and ease of use. Embedding with normalized
+  vectors are used by default.
+* `Classifier` (*authordetect/classifier*) - This class represents a MLP
+  classifier and is used to train on document vectors (with corresponding
+  lables). Afterwards, it can provide predictions on new document vectors.
+
+For reproducible results, set the `seed` paramater during training and prediction.
+Also, set environment variable `PYTHONHASHSEED` to an integer prior to launching
+Python interpreter process.
+
+
 ## Installation
 
 * The following packages are required (see `requirements.txt`):
-  * Python 3.7 or greater
+  * Python 3.6 or greater
   * typing
   * configparser
   * unidecode
   * urllib3
+  * smart\_open
+  * bs4
   * psutil
   * nltk
   * gensim
   * scikit-learn
+  * pandas
+  * seaborn
+  * matplotlib
   * numpy
-
-
-### Google Colab Install
-* See example notebook in `drivers/AuthorDetect_AuthorEmbedding.ipynb`.
-  The code is download directly from GitHub repo and installed.
-  For data files, you need to mount the Google Drive so that the folder shared
-  with corpus data is visible for notebook.
 
 
 ### Local Install
@@ -48,22 +72,36 @@ a dataset of Sherlock Holmes novels and short stories.
   >>> ...
   ```
 
-## General Information
 
-The `authordetect` package follows a modular object-oriented approach.
-The most relevant classes are:
-* `Author` (*authordetect/author.py*) - This class represents a corpus
-  corresponding to a single author and provides capabilities to load and
-  tokenize corpus, partition into documents, create embedding models for author
-  and each document. All these actions are part of the `writer2vec` algorithm
-  (see Overleaf paper), and a method with the same name is provided that
-  applies these transformations as a single step.
-* `Tokenizer` (*authordetect/tokenizer.py*) - This class represents a tokenizer
-  for performing sentence segmentation and tokenization of an `Author's`
-  corpus. It also contains a list of stopwords (from NLTK).
-* `Classifier` (*authordetect/classifier*) - This class represents a MLP
-  classifier and is used to train on document vectors (with corresponding
-  lables). Afterwards, it can provide predictions on new document vectors.
+### Google Colab Install
+* See example notebook in `drivers/AuthorDetect_AuthorEmbedding.ipynb`.
+  The code is download directly from GitHub repo and installed.
+  ```python
+  >>> !pip install git+https://github.com/edponce/DoyleInvestigators2
+  >>> # May need to restart runtime so that correct package versions are loaded
+  ```
+  Set up NLTK:
+  ```python
+  >>> import nltk
+  >>> nltk.download('stopwords')
+  >>> nltk.download('punkt')  # sentencizer
+  >>> nltk.download('averaged_perceptron_tagger')  # tagger
+  >>> nltk.download('universal_tagset')  # universal POS tags
+  >>> nltk.download('wordnet')  # lemmatizer
+  ```
+  For data files, you need to mount the Google Drive so that the folder shared
+  with corpus data is visible for notebook.
+  ```python
+  >>> from google.colab import drive
+  >>> drive.mount('/content/gdrive')
+  ```
+  Now you should be able to run `authordetect`:
+  ```python
+  >>> from authordetect import Author
+  >>> infile = '/content/gdrive/My Drive/.../text.txt'
+  >>> author = Author(infile)
+  >>> ...
+  ```
 
 
 ## Usage
@@ -81,10 +119,79 @@ The most relevant classes are:
   >>> author.preprocess(tokenizer)
   >>>
   >>> # Create an author's word2vec embedding model
-  >>> author.model.vocabulary  # access vocabulary from entire corpus
-  >>> author.model.vectors  # access non-normalized embedding matrix (NumPy 2D array)
-  >>> author.model.vectors_norm  # access normalized embedding matrix (NumPy 2D array)
-  >>> author.model['holmes']  # get vector associated with a word
+  >>> author.embed()
+  >>> author.embedding.vocabulary  # access vocabulary from entire corpus
+  >>> author.embedding.vectors  # access non-normalized embedding matrix (NumPy 2D array)
+  >>> author.embedding.vectors_norm  # access normalized embedding matrix (NumPy 2D array)
+  >>> author.embedding['holmes']  # get vector associated with a word
+  ```
+
+### Example: Save and load author's embedding model
+
+* Save Gensim's Word2Vec model:
+  ```python
+  >>> author.embedding.save('my_embedding.bin')
+  ```
+
+* Load existing Gensim's Word2Vec model:
+  ```python
+  >>> from authordetect import Author, EmbeddingModel
+  >>> embedding = EmbeddingModel()
+  >>> embedding.load('my_embedding.bin')
+  >>>
+  >>> # Use the loaded embedding with an Author
+  >>> author = Author('text.txt')
+  >>> author.preprocess()
+  >>> author.embed(embedding)
+  ```
+
+
+## Datasets and Models
+
+* MLP classifier models and author embeddings were created with the
+  `training/driver_train.py` script setting `seed=0`, `PYTHONHASHSEED=0`, and
+  `remain_factor=350/<part_size>`.
+
+* US/UK English translation was performed to entire corpus.
+  ```shell
+  > cd lang_translation/
+  > python driver_translate.py uk ../data/Rinehart_10.txt ../data/Rinehart_10_uk.txt
+  ```
+  To view in web application, enable the `tag` option (last argument)
+  ```shell
+  > python driver_translate.py uk ../data/Rinehart_10.txt ../data/Rinehart_10_uk_tag.txt 1
+  ```
+
+* Synonym replacement were performed using the embedding models of 50 dimension
+  and corresponding document partition size.
+  ```shell
+  > cd synonyms/
+  > python driver_synonyms.py 0 0.2 ../data/Rinehart_10.txt ../data/Rinehart_10_syn_350.txt ../training/doyle_50dim_350part.bin
+  ```
+  To view in web application, enable the `tag` option (first argument)
+  ```shell
+  > python driver_synonyms.py 1 0.2 ../data/Rinehart_10.txt ../data/Rinehart_10_syn_350_tag.txt
+  ```
+
+* Test datasets JSON files were created by combining the 10\% perturbed files.
+  This script takes multiple text files with corresponding labels and partitions
+  them into documents, then shuffles them and exports list of files to a JSON file.
+  ```shell
+  > cd test_datasets/
+  > python driver_create_json.py 350 perturbed_langtranslation_rinehart_350.json ../data/Doyle_10_uk.txt doyle ../data/Christie_10_uk.txt christie ../data/Rinehart_10_uk.txt rinehart
+  ```
+
+* There are helper scripts to compute frequency of perturbations for making plots.
+  First you need to create JSON file of the original corpus.
+  For example, for language translation:
+  ```shell
+  > cd test_datasets/
+  > python driver_create_json.py 350 original_rinehart_350.json ../data/Rinehart_10.txt rinehart
+  ```
+  Then, process them with `freq` script to the corresponding perturbation,
+  ```shell
+  > cd lang_translation/
+  > python driver_freq_translate.py uk ../test_datasets/original_rinehart_3500.json perturb_rate_langtranslation_rinehart_3500.json
   ```
 
 
@@ -169,20 +276,6 @@ The most relevant classes are:
   * 10% for testing
 * 90/10, share 10 with other groups to perturb
   * From 10% use 80/20 for defeat dataset
-
-
-### Chris Example: Defeat Dataset
-
-Example: You have 1000 documents. 100 of them form the validation dataset. You send those to the other team. They find 400 other documents, for a total validation/defeat dataset of 500 documents.
-
-
-<!-- ### Defeat Dataset -->
-<!--  -->
-<!-- Each group creates a validation and defeat dataset to give to other groups (20/80%). -->
-<!-- * 20% from author's corpus, 80% from other authors - document how you mix it -->
-<!-- * Alter the 20% input - do not change meaning nor semantics of original text -->
-<!-- * Select adversarial techniques -->
-<!-- * Document how you construct the defeat dataset, and absolutely document model performance. -->
 
 
 ## Adversarial Techniques

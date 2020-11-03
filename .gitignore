@@ -1,5 +1,8 @@
 # Other
-**/*.bin
+**/vim-markdown-preview*
+pubmed_abstracts
+# **/*.bin
+# **/*.pkl
 **/*.swp
 **/*.bak
 **/*.log

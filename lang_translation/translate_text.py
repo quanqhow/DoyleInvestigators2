@@ -1,16 +1,39 @@
+#! /usr/bin/python3
+
+import re
 import json
-
-with open('translations.json', 'r') as f:
-    tables = json.load(f)
+from authordetect import Author
 
 
-def translate(text, country):
-    country = country.lower()
-    if country not in ['us', 'uk']:
+with open('translations.json') as fd:
+    tables = json.load(fd)
+
+
+def translate(text: str, to_country: str = 'uk', tag: bool = False):
+    to_country = to_country.lower()
+    if to_country not in ['us', 'uk']:
         raise ValueError("`country` must be one of ['us', 'uk']")
 
-    conversion = 'us_to_uk' if country == 'uk' else 'uk_to_us'
+    count = 0
+    conversion = 'us_to_uk' if to_country == 'uk' else 'uk_to_us'
     for source, target in tables[conversion].items():
-        text = text.replace(source, target)
+        target = f'<{source}|{target}>' if tag else target
+        text = re.sub(fr'\b{source}\b', target, text)
+        count += len(list(re.finditer(source, text)))
+    return text, count
 
-    return text
+
+def get_documents(corpus_and_labels, part_size: int):
+    if isinstance(corpus_and_labels, str):
+        corpus_and_labels = [(corpus_and_labels, None)]
+    docs = []
+    for corpus, label in corpus_and_labels:
+        author = Author(corpus, label)
+        author.preprocess()
+        author.partition_into_docs(part_size)
+        for doc in author.docs:
+            docs.append({
+                'label': author.label,
+                'text': str(doc),
+            })
+    return docs

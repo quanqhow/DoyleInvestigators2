@@ -25,7 +25,7 @@ class Classifier:
     def train(self, features: Iterable[Any], labels: Iterable[Any], **kwargs):
         self._clf.fit(features, labels, **kwargs)
 
-    def predict(self, features, **kwargs):
+    def predict(self, features: Iterable[Any], **kwargs):
         return self._clf.predict(features, **kwargs)
 
     def load(self, fn: str):
