@@ -17,7 +17,7 @@ The most relevant classes are:
 * `Tokenizer` (*authordetect/tokenizer.py*) - This class represents a tokenizer
   for performing sentence segmentation and tokenization of an `Author's`
   corpus. It also contains a list of stopwords (from NLTK).
-* EmbeddingModel (*authordetect/embedding.py*) - This class represents a
+* `EmbeddingModel` (*authordetect/embedding.py*) - This class represents a
   vector embedding model and is a wrapper over Gensim's Word2Vec with added
   capabilities to save/load embeddings and ease of use. Embedding with normalized
   vectors are used by default.
