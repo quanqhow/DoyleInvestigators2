@@ -8,7 +8,7 @@ https://colab.research.google.com/drive/1QsaMXOws4i-iFGE_5PFxouTMA5GE10jp?usp=sh
 
 Notes:
 * w2v models have already been run for each author, see `models/`. You can check
-  this process in `Section 2 w2v models: sentence, and 50, 300 emb\_size`.
+  this process in `Section 2 w2v models: sentence, and 50, 300 emb_size`.
 * The main section that you would have to access and modify is `Classifier`.
   * In the subsection `Data from each author`, you would have to create the
     training and testing dataset for each author, there's the example for
