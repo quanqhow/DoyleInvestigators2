@@ -50,19 +50,11 @@ class Author:
 
     @property
     def words(self):
-        depth = self._parsed.depth
-        if depth >= 2:
-            tokens = list(self._parsed.iter_tokens(depth - 1))
-            return TextSpan(tokens, (tokens[0].span[0], tokens[-1].span[1]))
-        return TextSpan()
+        return type(self).get_tokens(self._parsed, min_depth=2)
 
     @property
     def sentences(self):
-        depth = self._parsed.depth
-        if depth >= 3:
-            tokens = list(self._parsed.iter_tokens(depth - 2))
-            return TextSpan(tokens, (tokens[0].span[0], tokens[-1].span[1]))
-        return TextSpan()
+        return type(self).get_tokens(self._parsed, min_depth=3)
 
     @property
     def docs(self):
@@ -93,49 +85,53 @@ class Author:
     def docs_vectors_norm(self):
         return self._docs_vectors_norm
 
+    @staticmethod
+    def get_tokens(text_span: 'TextSpan', *, min_depth=2):
+        depth = text_span.depth
+        if depth >= min_depth:
+            tokens = list(text_span.iter_tokens(depth - (min_depth - 1)))
+            return TextSpan(tokens, (tokens[0].span[0], tokens[-1].span[1]))
+        return TextSpan()
+
+    @staticmethod
     def substitute(
-        self,
-        words: Iterable['TextSpan'] = None,
+        text: str,
+        text_span: 'TextSpan',
         *,
         force_capitalization: bool = True,
     ):
-        """Substitutes the given words in a text."""
-        text = self.corpus
-        if words is None:
-            words = self.words
-
+        """Substitutes the given tokens in a text."""
         parsed_text = ''
-        for i, word in enumerate(words):
-            # Get text before first new word
-            if i == 0:
-                parsed_text = text[:word.span[0]]
+        for i, tspan in enumerate(text_span):
+            # Get text before first new token, if token is "at the beginning"
+            if i == 0 and tspan.span[0] < 3:
+                parsed_text = text[:tspan.span[0]]
 
-            # Check capitalization for new word.
-            # First letter capitalization is applied if any of the first
-            # two characters of original word are uppercase to allow a symbol
+            # Check capitalization for new token.
+            # First letter capitalization is applied if any of the first two
+            # characters of original token are uppercase to allow a symbol
             # (e.g., quotation mark) and letter combination.
-            # NOTE: This is tricky in the sense that if a substituted word
-            # is not wanted capitalized, this will force it. Also, this is
+            # NOTE: This is tricky in the sense that if a substituted token is
+            # not wanted capitalized, this will force it. Also, this is
             # tokenizer dependent.
-            new_word = str(word)
-            old_word = text[word.span[0]:word.span[1]]
-            if force_capitalization and any(map(str.isupper, old_word[:2])):
-                if old_word.isupper():
-                    # Caplitalize word
-                    new_word = new_word.upper()
-                elif len(new_word) > 0:
+            new_token = str(tspan)
+            old_token = text[tspan.span[0]:tspan.span[1]]
+            if force_capitalization and any(map(str.isupper, old_token[:2])):
+                if old_token.isupper():
+                    # Caplitalize token
+                    new_token = new_token.upper()
+                elif len(new_token) > 0:
                     # Capitalize only first character
-                    new_word = new_word[0].upper() + new_word[1:]
+                    new_token = new_token[0].upper() + new_token[1:]
 
-            # Get text from end of new word to begin of next word or end of text
-            if i < len(words) - 1:
-                next_word_end = words[i+1].span[0]
-            else:
-                next_word_end = None
-            next_range = slice(word.span[1], next_word_end)
+            # Get text from end of new token to begin of next token or end
+            # of text
+            post_text = ''
+            if i < len(text_span) - 1:
+                post_text = text[slice(tspan.span[1], text_span[i+1].span[0])]
 
-            # Substitute new word
-            parsed_text += new_word + text[next_range]
+            # Substitute new token
+            parsed_text += new_token + post_text
         return parsed_text
 
     def preprocess(self, tokenizer: Tokenizer = Tokenizer()):

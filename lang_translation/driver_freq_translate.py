@@ -2,13 +2,15 @@
 
 import sys
 from authordetect import Author, load_json, save_json
-from translate_text import translate, get_documents
+from translate_text import translate
 
 
 if __name__ == '__main__':
     if len(sys.argv) != 4:
         print(f'Usage: {sys.argv[0]} lang infile outfile')
-        print('files are JSON files')
+        print('lang (str): uk, us')
+        print('infile (str): JSON file')
+        print('outfile (str): JSON file')
         sys.exit()
 
     lang, infile, outfile = sys.argv[1:]
