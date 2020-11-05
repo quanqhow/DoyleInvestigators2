@@ -129,8 +129,7 @@ class BaseTokenizer(ABC):
         if len(self._converters) == 0:
             yield from self._sentencize(text)
         else:
-            for begin, end, sentence in self._sentencize(text):
-                yield begin, end, self.convert(sentence)
+            yield from self._sentencize(self.convert(text))
 
     def tokenize(
         self,

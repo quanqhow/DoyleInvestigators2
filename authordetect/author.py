@@ -1,6 +1,7 @@
 #! /usr/bin/python3
 
 import numpy
+from unidecode import unidecode
 from .textutils import load_text, load_pickle, save_pickle
 from .textspan import TextSpan
 from .embedding import EmbeddingModel
@@ -21,7 +22,7 @@ def np_sum(data: numpy.ndarray):
 
 class Author:
     def __init__(self, corpus: str, label: Any = None):
-        self._corpus = load_text(corpus) if corpus else corpus
+        self._corpus = unidecode(load_text(corpus) if corpus else corpus)
         # Print info on how is input considered so that if a filename does
         # not exists, then user can be informed.
         if self._corpus is not None:
@@ -104,8 +105,8 @@ class Author:
         parsed_text = ''
         for i, tspan in enumerate(text_span):
             # Get text before first new token, if token is "at the beginning"
-            if i == 0 and tspan.span[0] < 3:
-                parsed_text = text[:tspan.span[0]]
+            # if i == 0 and tspan.span[0] < 3:
+                # parsed_text = text[:tspan.span[0]]
 
             # Check capitalization for new token.
             # First letter capitalization is applied if any of the first two

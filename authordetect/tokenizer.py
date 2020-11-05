@@ -58,8 +58,8 @@ class Tokenizer:
             # Remove enclosing quotes
             functools.partial(re.sub, r"'(\w+)'", r' \1 ', flags=re.A),
             # Remove quotes at beginning/end if not valid (e.g., 'Tis, cars')
-            functools.partial(re.sub, r"(^|\W)'([^t])", r'\1 \2', flags=re.A | re.I), 
-            functools.partial(re.sub, r"([^s])'(\W|$)", r'\1 \2', flags=re.A | re.I), 
+            functools.partial(re.sub, r"(^|\W)'([^t])", r'\1 \2', flags=re.A | re.I),
+            functools.partial(re.sub, r"([^s])'(\W|$)", r'\1 \2', flags=re.A | re.I),
             # Remove non-bounded underscores
             functools.partial(re.sub, r"(^|\W)_", r'\1 ', flags=re.A),
             functools.partial(re.sub, r"_(\W|$)", r' \1', flags=re.A),
