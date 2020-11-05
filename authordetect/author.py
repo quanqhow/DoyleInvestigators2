@@ -1,6 +1,7 @@
 #! /usr/bin/python3
 
 import numpy
+from unidecode import unidecode
 from .textutils import load_text, load_pickle, save_pickle
 from .textspan import TextSpan
 from .embedding import EmbeddingModel
@@ -21,7 +22,7 @@ def np_sum(data: numpy.ndarray):
 
 class Author:
     def __init__(self, corpus: str, label: Any = None):
-        self._corpus = load_text(corpus) if corpus else corpus
+        self._corpus = unidecode(load_text(corpus) if corpus else corpus)
         # Print info on how is input considered so that if a filename does
         # not exists, then user can be informed.
         if self._corpus is not None:
@@ -48,45 +49,19 @@ class Author:
     def parsed(self):
         return self._parsed
 
-    @staticmethod
-    def parse_str(corpus, words):
-        text = corpus
-        parsed_text = ''
-        for i, word in enumerate(words):
-            if i < len(words) - 1:
-                next_word = words[i+1]
-                if i == 0:
-                    parsed_text = text[:word.span[0]] + str(word) + text[word.span[1]:next_word.span[0]]
-                else:
-                    parsed_text += str(word) + text[word.span[1]:next_word.span[0]]
-            else:
-                if i == 0:
-                    parsed_text = text[:word.span[0]] + str(word) + text[word.span[1]:]
-                else:
-                    parsed_text += str(word) + text[word.span[1]:]
-        return parsed_text
-
     @property
     def words(self):
-        depth = self._parsed.depth
-        if depth >= 2:
-            tokens = list(self._parsed.iter_tokens(depth - 1))
-            return TextSpan(tokens, (tokens[0].span[0], tokens[-1].span[1]))
-        return TextSpan()
+        return type(self).get_tokens(self._parsed, min_depth=2)
 
     @property
     def sentences(self):
-        depth = self._parsed.depth
-        if depth >= 3:
-            tokens = list(self._parsed.iter_tokens(depth - 2))
-            return TextSpan(tokens, (tokens[0].span[0], tokens[-1].span[1]))
-        return TextSpan()
+        return type(self).get_tokens(self._parsed, min_depth=3)
 
     @property
     def docs(self):
         return self._docs
 
-    # NOTE: *_* properties are utility methods useful to get lists of strings.
+    # NOTE: *_str properties are utility methods useful to get lists of strings.
     @property
     def words_str(self):
         return list(str(w) for w in self.words)
@@ -111,9 +86,61 @@ class Author:
     def docs_vectors_norm(self):
         return self._docs_vectors_norm
 
+    @staticmethod
+    def get_tokens(text_span: 'TextSpan', *, min_depth=2):
+        depth = text_span.depth
+        if depth >= min_depth:
+            tokens = list(text_span.iter_tokens(depth - (min_depth - 1)))
+            return TextSpan(tokens, (tokens[0].span[0], tokens[-1].span[1]))
+        return TextSpan()
+
+    @staticmethod
+    def substitute(
+        text: str,
+        text_span: 'TextSpan',
+        *,
+        force_capitalization: bool = True,
+    ):
+        """Substitutes the given tokens in a text."""
+        parsed_text = ''
+        for i, tspan in enumerate(text_span):
+            # Get text before first new token, if token is "at the beginning"
+            # if i == 0 and tspan.span[0] < 3:
+                # parsed_text = text[:tspan.span[0]]
+
+            # Check capitalization for new token.
+            # First letter capitalization is applied if any of the first two
+            # characters of original token are uppercase to allow a symbol
+            # (e.g., quotation mark) and letter combination.
+            # NOTE: This is tricky in the sense that if a substituted token is
+            # not wanted capitalized, this will force it. Also, this is
+            # tokenizer dependent.
+            new_token = str(tspan)
+            old_token = text[tspan.span[0]:tspan.span[1]]
+            if force_capitalization and any(map(str.isupper, old_token[:2])):
+                if old_token.isupper():
+                    # Caplitalize token
+                    new_token = new_token.upper()
+                elif len(new_token) > 0:
+                    # Capitalize only first character
+                    new_token = new_token[0].upper() + new_token[1:]
+
+            # Get text from end of new token to begin of next token or end
+            # of text
+            post_text = ''
+            if i < len(text_span) - 1:
+                post_text = text[slice(tspan.span[1], text_span[i+1].span[0])]
+
+            # Substitute new token
+            parsed_text += new_token + post_text
+        return parsed_text
+
     def preprocess(self, tokenizer: Tokenizer = Tokenizer()):
         # Reset because parsed corpus might have changed
         self._docs = TextSpan()
+        self._embedding = None
+        self._docs_vectors = numpy.array([])
+        self._docs_vectors_norm = numpy.array([])
 
         if tokenizer is None:
             # NOTE: No tokenizer, then represent corpus as one sentence
@@ -137,7 +164,6 @@ class Author:
             if len(sents) > 0:
                 sents.span = (sents[0].span[0], sents[-1].span[1])
             self._parsed = sents
-
 
     def partition_into_docs(self, size: int = None, remain_factor: float = 1.):
         """Partition text into documents of a specified token count."""

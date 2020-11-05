@@ -11,7 +11,7 @@ def save_corpus(data: list, fn: str):
         json.dump(data, fd)
 
 
-def get_documents(corpus_and_labels, part_size):
+def get_documents(corpus_and_labels, part_size: int = None):
     if isinstance(corpus_and_labels, str):
         corpus_and_labels = [(corpus_and_labels, None)]
     docs = []
@@ -20,9 +20,10 @@ def get_documents(corpus_and_labels, part_size):
         author.preprocess()
         author.partition_into_docs(part_size)
         for doc in author.docs:
+            words = Author.get_tokens(doc)
             docs.append({
                 'label': author.label,
-                'text': str(doc),
+                'text': Author.substitute(author.corpus, words),
             })
     return docs
 
@@ -30,6 +31,10 @@ def get_documents(corpus_and_labels, part_size):
 if __name__ == '__main__':
     if len(sys.argv) < 5:
         print(f'Usage: {sys.argv[0]} part_size outfile infile label [...infile label]')
+        print('part_size (int): number of words per partition')
+        print('outfile (str): JSON file')
+        print('infile (str): text file')
+        print('label (str): a word')
         sys.exit()
 
     if len(sys.argv) % 2 == 0:
@@ -38,15 +43,18 @@ if __name__ == '__main__':
     part_size = int(sys.argv[1])
     outfile = sys.argv[2]
 
-    corpus_and_labels = []
+    infiles_and_labels = []
     for i in range(3, len(sys.argv), 2):
-        corpus, label = sys.argv[i:i+2]
-        corpus_and_labels.append((corpus, label))
-    print('Data:', corpus_and_labels)
+        infile, label = sys.argv[i:i+2]
+        infiles_and_labels.append((infile, label))
+    print('Input files/labels:', infiles_and_labels)
     print('Output file:', outfile)
 
     # Generate list of documents
-    docs = get_documents(corpus_and_labels, part_size)
+    if part_size > 0:
+        docs = get_documents(infiles_and_labels, part_size)
+    else:
+        docs = get_documents(infiles_and_labels)
     print('Total documents:', len(docs))
 
     # Randomize documents

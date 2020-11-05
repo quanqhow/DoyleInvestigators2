@@ -8,10 +8,13 @@ from synonym_functions import perturb_author
 if __name__ == '__main__':
     if len(sys.argv) < 4:
         print(f'Usage: {sys.argv[0]} rate infile outfile [embedding.bin]')
-        print('files are JSON files')
+        print('rate (float): perturbation threshold [0-1]')
+        print('infile (str): JSON file')
+        print('outfile (str): JSON file')
+        print('embedding.bin (str): binary file')
         sys.exit()
 
-    rate = float(sys.argv[1])
+    rate = max(0, min(1, float(sys.argv[1])))  # clip to bound [0-1]
     infile, outfile = sys.argv[2:4]
     embedding_file = sys.argv[4] if len(sys.argv) == 5 else None
     print('Input file:', infile)

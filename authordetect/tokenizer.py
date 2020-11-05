@@ -49,18 +49,26 @@ class Tokenizer:
 
         # Regexes to transform input text of tokenization process
         # NOTE: Transformations need to maintain same alignment so that
-        # spans are consistent with input corpus.
+        # spans are consistent with input corpus. This means that
+        # substitutions need to replace same number of characters.
+        # Also, order matters.
         self._tokenizer_transforms = [
-            # Remove non-alphanumerics (apostrophe for contractions)
-            functools.partial(re.sub, r"[^\w']", ' ', flags=re.ASCII),
+            # Remove non-alphanumerics (but not apostrophes for contractions)
+            functools.partial(re.sub, r"[^\w']", ' ', flags=re.A),
             # Remove enclosing quotes
-            functools.partial(re.sub, r"'(\w+)'", r' \1 ', flags=re.ASCII),
+            functools.partial(re.sub, r"'(\w+)'", r' \1 ', flags=re.A),
+            # Remove quotes at beginning/end if not valid (e.g., 'Tis, cars')
+            functools.partial(re.sub, r"(^|\W)'([^t])", r'\1 \2', flags=re.A | re.I),
+            functools.partial(re.sub, r"([^s])'(\W|$)", r'\1 \2', flags=re.A | re.I),
+            # Remove non-bounded underscores
+            functools.partial(re.sub, r"(^|\W)_", r'\1 ', flags=re.A),
+            functools.partial(re.sub, r"_(\W|$)", r' \1', flags=re.A),
         ]
 
         # Regexes to select valid tokens
         self._tokenizer_filters = [
             # Check that tokens include at least one alpha character
-            functools.partial(re.search, r'[A-Za-z]', flags=re.ASCII),
+            functools.partial(re.search, r'[a-z]', flags=re.I),
         ]
 
     def sentencize(self, text: str):
@@ -70,8 +78,12 @@ class Tokenizer:
     def tokenize(self, text: str):
         # Apply transformations at the sentence level so that output
         # from tokenizer are individual tokens.
-        for token_transform in self._tokenizer_transforms:
-            text = token_transform(text)
+        while(True):
+            orig_text = text
+            for token_transform in self._tokenizer_transforms:
+                text = token_transform(text)
+            if orig_text == text:
+                break
 
         for b, e, t in self._tokenizer.tokenize(text):
             for token_filter in self._tokenizer_filters:

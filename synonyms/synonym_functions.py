@@ -109,4 +109,4 @@ def perturb_author(corpus, embedding_file=None, tag=False, **kwargs):
             word = f'<{w}|{rw}>' if tag else rw
             words[i] = TextSpan(word, w.span)
             count += 1
-    return Author.parse_str(author.corpus, words), count
+    return Author.substitute(author.corpus, words), count
