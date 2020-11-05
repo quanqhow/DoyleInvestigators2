@@ -48,24 +48,6 @@ class Author:
     def parsed(self):
         return self._parsed
 
-    @staticmethod
-    def parse_str(corpus, words):
-        text = corpus
-        parsed_text = ''
-        for i, word in enumerate(words):
-            if i < len(words) - 1:
-                next_word = words[i+1]
-                if i == 0:
-                    parsed_text = text[:word.span[0]] + str(word) + text[word.span[1]:next_word.span[0]]
-                else:
-                    parsed_text += str(word) + text[word.span[1]:next_word.span[0]]
-            else:
-                if i == 0:
-                    parsed_text = text[:word.span[0]] + str(word) + text[word.span[1]:]
-                else:
-                    parsed_text += str(word) + text[word.span[1]:]
-        return parsed_text
-
     @property
     def words(self):
         depth = self._parsed.depth
@@ -86,7 +68,7 @@ class Author:
     def docs(self):
         return self._docs
 
-    # NOTE: *_* properties are utility methods useful to get lists of strings.
+    # NOTE: *_str properties are utility methods useful to get lists of strings.
     @property
     def words_str(self):
         return list(str(w) for w in self.words)
@@ -111,9 +93,57 @@ class Author:
     def docs_vectors_norm(self):
         return self._docs_vectors_norm
 
+    def substitute(
+        self,
+        words: Iterable['TextSpan'] = None,
+        *,
+        force_capitalization: bool = True,
+    ):
+        """Substitutes the given words in a text."""
+        text = self.corpus
+        if words is None:
+            words = self.words
+
+        parsed_text = ''
+        for i, word in enumerate(words):
+            # Get text before first new word
+            if i == 0:
+                parsed_text = text[:word.span[0]]
+
+            # Check capitalization for new word.
+            # First letter capitalization is applied if any of the first
+            # two characters of original word are uppercase to allow a symbol
+            # (e.g., quotation mark) and letter combination.
+            # NOTE: This is tricky in the sense that if a substituted word
+            # is not wanted capitalized, this will force it. Also, this is
+            # tokenizer dependent.
+            new_word = str(word)
+            old_word = text[word.span[0]:word.span[1]]
+            if force_capitalization and any(map(str.isupper, old_word[:2])):
+                if old_word.isupper():
+                    # Caplitalize word
+                    new_word = new_word.upper()
+                elif len(new_word) > 0:
+                    # Capitalize only first character
+                    new_word = new_word[0].upper() + new_word[1:]
+
+            # Get text from end of new word to begin of next word or end of text
+            if i < len(words) - 1:
+                next_word_end = words[i+1].span[0]
+            else:
+                next_word_end = None
+            next_range = slice(word.span[1], next_word_end)
+
+            # Substitute new word
+            parsed_text += new_word + text[next_range]
+        return parsed_text
+
     def preprocess(self, tokenizer: Tokenizer = Tokenizer()):
         # Reset because parsed corpus might have changed
         self._docs = TextSpan()
+        self._embedding = None
+        self._docs_vectors = numpy.array([])
+        self._docs_vectors_norm = numpy.array([])
 
         if tokenizer is None:
             # NOTE: No tokenizer, then represent corpus as one sentence
@@ -137,7 +167,6 @@ class Author:
             if len(sents) > 0:
                 sents.span = (sents[0].span[0], sents[-1].span[1])
             self._parsed = sents
-
 
     def partition_into_docs(self, size: int = None, remain_factor: float = 1.):
         """Partition text into documents of a specified token count."""
