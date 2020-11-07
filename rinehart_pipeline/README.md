@@ -41,7 +41,7 @@ Notes:
   load them from this path.
 * Also, you need to 2 additional folders in your personal Google drive:
   * One folder for saving MLP models, the code currently saves them at `/content/drive/My Drive/clf_doyle/`.
-  * One folder for staging perturbed testing data, the code currently uses `/content/drive/My Drive/perturbed_data_doyle`. In this folder you need to upload 6 files
+  * One folder for staging perturbed testing data, the code currently uses `/content/drive/My Drive/perturbed_data_doyle/`. In this folder you need to upload 6 files
     from our GitHub repo in `test_datasets/perturbed_xxx_doyle_xxx.json`.
 * Running the notebook is fairly straightforward, each section has a meaningful
   title.
