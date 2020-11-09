@@ -5,12 +5,6 @@ import random
 from authordetect import Author, save_json
 
 
-def save_corpus(data: list, fn: str):
-    """Write a data structure into a JSON file."""
-    with open(fn, 'w') as fd:
-        json.dump(data, fd)
-
-
 def get_documents(corpus_and_labels, part_size: int = None):
     if isinstance(corpus_and_labels, str):
         corpus_and_labels = [(corpus_and_labels, None)]
