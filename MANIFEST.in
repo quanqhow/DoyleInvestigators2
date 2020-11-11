@@ -3,7 +3,6 @@ README.md
 include project.cfg
 include requirements.txt
 include Makefile
-include Doyle_Corpus_Extraction.ipynb
 graft data
 graft training
 graft lang_translation

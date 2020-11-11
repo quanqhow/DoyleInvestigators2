@@ -2,24 +2,23 @@
 
 import sys
 import random
-from authordetect import Author, Tokenizer, load_json
+from authordetect import Author, load_json
 
 
 def describe_corpus(corpus: dict):
-    tokenizer = Tokenizer(lemmatizer=None)
     total_sents = 0
     total_words = 0
     total_chars = 0
     for idx, (story, text) in enumerate(corpus.items(), start=1):
         author = Author(text)
-        author.preprocess(tokenizer)
+        author.preprocess()
         print(f'{idx}.', story)
         print('\tSentences:', len(author.sentences))
         print('\tWords:', len(author.words))
-        print('\tCharacters:', len(author.corpus))
+        print('\tCharacters:', len(author.text))
         total_sents += len(author.sentences)
         total_words += len(author.words)
-        total_chars += len(author.corpus)
+        total_chars += len(author.text)
     print('Total sentences:', total_sents)
     print('Total words:', total_words)
     print('Total characters:', total_chars)

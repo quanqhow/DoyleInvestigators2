@@ -1,7 +1,6 @@
 #! /usr/bin/python3
 
 import os
-# import multiprocessing
 import psutil
 from gensim.models import Word2Vec
 from typing import Iterable
@@ -11,37 +10,39 @@ __all__ = ['EmbeddingModel']
 
 
 class EmbeddingModel:
-    def __init__(self, **kwargs):
+    def __init__(self, embedding_file: str = None, **kwargs):
         if 'sentences' in kwargs or 'corpus_file' in kwargs:
             raise Exception('training is not allowed during initialization, use train()')
 
-        # Handle seeding consistently
-        seed = kwargs.pop('seed', None)
-        if seed is None:
-            seed = 1  # Gensim's default value
-            workers = kwargs.pop('workers', psutil.cpu_count(False))
-            # workers=kwargs.pop('workers', multiprocessing.cpu_count() / 2)
+        if embedding_file:
+            self._model = type(self).load(embedding_file)
         else:
-            workers = kwargs.pop('workers', 1)
+            # Handle seeding consistently
+            seed = kwargs.pop('seed', None)
+            if seed is None:
+                seed = 1  # Gensim's default value
+                workers = kwargs.pop('workers', psutil.cpu_count(False))
+            else:
+                workers = kwargs.pop('workers', 1)
 
-        self._model = Word2Vec(
-            size=kwargs.pop('size', 50),
-            window=kwargs.pop('window', 5),
-            min_count=kwargs.pop('min_count', 1),
-            workers=workers,
-            sg=kwargs.pop('sg', 0),
-            hs=kwargs.pop('hs', 0),
-            negative=kwargs.pop('negative', 20),
-            alpha=kwargs.pop('alpha', 0.03),
-            min_alpha=kwargs.pop('min_alpha', 0.0007),
-            seed=seed,
-            max_vocab_size=kwargs.pop('max_vocab_size', None),
-            max_final_vocab=kwargs.pop('max_final_vocab', None),
-            sample=kwargs.pop('sample', 6e-5),
-            iter=kwargs.pop('iter', 10),
-            sorted_vocab=kwargs.pop('sorted_vocab', 1),
-            **kwargs,
-        )
+            self._model = Word2Vec(
+                size=kwargs.pop('size', 50),
+                window=kwargs.pop('window', 5),
+                min_count=kwargs.pop('min_count', 1),
+                workers=workers,
+                sg=kwargs.pop('sg', 0),
+                hs=kwargs.pop('hs', 0),
+                negative=kwargs.pop('negative', 20),
+                alpha=kwargs.pop('alpha', 0.03),
+                min_alpha=kwargs.pop('min_alpha', 0.0007),
+                seed=seed,
+                max_vocab_size=kwargs.pop('max_vocab_size', None),
+                max_final_vocab=kwargs.pop('max_final_vocab', None),
+                sample=kwargs.pop('sample', 6e-5),
+                iter=kwargs.pop('iter', 10),
+                sorted_vocab=kwargs.pop('sorted_vocab', 1),
+                **kwargs,
+            )
 
     def __getitem__(self, key):
         """Returns the vector associated with a given word."""
@@ -74,7 +75,7 @@ class EmbeddingModel:
         )
         self._model.wv.init_sims()
 
-    def save(self, outfile):
+    def save(self, outfile: str):
         outdir = os.path.dirname(outfile)
         if outdir and not os.path.isdir(outdir):
             os.makedirs(outdir, exist_ok=True)
@@ -82,6 +83,8 @@ class EmbeddingModel:
         if outfile:
             self._model.save(outfile)
 
-    def load(self, infile: str):
-        self._model = Word2Vec.load(infile)
-        self._model.wv.init_sims()
+    @staticmethod
+    def load(fn: str):
+        model = Word2Vec.load(fn)
+        model.wv.init_sims()
+        return model

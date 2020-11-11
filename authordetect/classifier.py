@@ -9,14 +9,17 @@ __all__ = ['Classifier']
 
 
 class Classifier:
-    def __init__(self, **kwargs):
-        self._clf = MLPClassifier(
-            solver=kwargs.pop('solver', 'lbfgs'),
-            alpha=kwargs.pop('alpha', 1e-5),
-            hidden_layer_sizes=kwargs.pop('hidden_layer_sizes', (100,)),
-            random_state=kwargs.pop('random_state', None),
-            **kwargs,
-        )
+    def __init__(self, classifier_file: str = None, **kwargs):
+        if classifier_file:
+            self._clf = type(self).load(classifier_file)
+        else:
+            self._clf = MLPClassifier(
+                solver=kwargs.pop('solver', 'lbfgs'),
+                alpha=kwargs.pop('alpha', 1e-5),
+                hidden_layer_sizes=kwargs.pop('hidden_layer_sizes', (100,)),
+                random_state=kwargs.pop('random_state', None),
+                **kwargs,
+            )
 
     @property
     def model(self):
@@ -28,8 +31,9 @@ class Classifier:
     def predict(self, features: Iterable[Any], **kwargs):
         return self._clf.predict(features, **kwargs)
 
-    def load(self, fn: str):
-        self._clf = load_pickle(fn)
+    def save(self, outfile: str):
+        save_pickle(self._clf, outfile)
 
-    def save(self, fn: str):
-        save_pickle(self._clf, fn)
+    @staticmethod
+    def load(fn: str):
+        return load_pickle(fn)
