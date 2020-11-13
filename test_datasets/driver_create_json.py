@@ -2,7 +2,7 @@
 
 import sys
 import random
-from authordetect import Author, save_json
+from authordetect import Author, Tokenizer, save_json
 
 
 def get_documents(corpus_and_labels, part_size: int = None):
@@ -11,7 +11,7 @@ def get_documents(corpus_and_labels, part_size: int = None):
     docs = []
     for corpus, label in corpus_and_labels:
         author = Author(corpus, label)
-        author.preprocess()
+        author.preprocess(Tokenizer(lemmatizer='wordnet'))
         author.partition_into_documents(part_size)
         for doc in author.parsed_documents:
             words = doc.get_tokens()

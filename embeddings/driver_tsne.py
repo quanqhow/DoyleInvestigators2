@@ -1,6 +1,6 @@
 #! /usr/bin/python3
 
-from authordetect import Author, EmbeddingModel
+from authordetect import Author, Tokenizer, EmbeddingModel
 from tsne import (
     get_top_n_similar_words,
     get_top_n_disimilar_words,
@@ -32,7 +32,7 @@ author = Author(infile)
 print('Corpus characters:', len(author.text))
 
 # Sentence segmentation and tokenization
-author.preprocess()
+author.preprocess(Tokenizer(lemmatizer='wordnet'))
 print('Corpus sentences:', len(author.sentences))
 print('Corpus tokens:', len(author.words))
 print('Corpus vocabulary:', len(author.parsed_text.vocabulary))

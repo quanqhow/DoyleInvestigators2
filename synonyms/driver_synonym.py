@@ -2,7 +2,7 @@
 
 import sys
 from authordetect import save_text
-from synonym_functions import perturb_author
+from synonym import perturb_author
 
 
 if __name__ == '__main__':
