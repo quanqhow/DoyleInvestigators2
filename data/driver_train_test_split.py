@@ -1,26 +1,12 @@
 #! /usr/bin/python3
 
-import os
 import sys
 from authordetect import Author, TextSpan, textutils, trainutils
 
 
-def save_data_to_file(corpus: str, docs: 'TextSpan', outfile: str):
-    # Create output directory
-    # Use a temporary directory to prevent overwrites, user is responsible for
-    # moving output to a valid destination.
-    outdir = os.path.dirname(outfile)
-    if outdir and not os.path.isdir(outdir):
-        os.makedirs(outdir, exist_ok=True)
-
-    # Save data to file
-    spans = [doc.span for doc in docs]
-    textutils.save_text(' '.join(textutils.get_text_from_span(corpus, spans)), outfile)
-
-
 if __name__ == '__main__':
-    if len(sys.argv) < 5:
-        print(f'Usage: {sys.argv[0]} part_size infile trainfile testfile [test_size remain_factor seed]')
+    if len(sys.argv) < 3:
+        print(f'Usage: {sys.argv[0]} part_size infile [trainfile testfile test_size remain_factor seed]')
         print('part_size (int): number of words per partition')
         print('infile (str): Text file')
         print('trainfile (str): Text file')
@@ -31,11 +17,13 @@ if __name__ == '__main__':
         sys.exit()
 
     part_size = int(sys.argv[1])
-    infile, trainfile, testfile = sys.argv[2:5]
+    infile = sys.argv[2]
+    trainfile = sys.argv[3] if len(sys.argv) > 3 else None
+    testfile = sys.argv[4] if len(sys.argv) > 4 else None
     test_size = float(sys.argv[5]) if len(sys.argv) > 5 else .1
     # Factor for capturing as much as possible from trailing text
     # Default is 1. but set to 0.1 because 3500/350=10%
-    remain_factor = float(sys.argv[6]) if len(sys.argv) > 6 else 1.
+    remain_factor = float(sys.argv[6]) if len(sys.argv) > 6 else (350 / part_size)
     seed = int(sys.argv[7]) if len(sys.argv) > 7 else 0
     print('Input file:', infile)
     print('Train file:', trainfile)
@@ -61,5 +49,12 @@ if __name__ == '__main__':
     print('Testing tokens:', test_docs[0].size, test_docs[-1].size)
 
     # Save train/test data to file
-    save_data_to_file(author.text, train_docs, trainfile)
-    save_data_to_file(author.text, test_docs, testfile)
+    if trainfile:
+        spans = [doc.span for doc in train_docs]
+        text = ' '.join(textutils.get_text_from_span(author.text, spans))
+        textutils.save_text(text, trainfile)
+
+    if testfile:
+        spans = [doc.span for doc in test_docs]
+        text = ' '.join(textutils.get_text_from_span(author.text, spans))
+        textutils.save_text(text, testfile)
