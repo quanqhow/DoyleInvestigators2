@@ -23,13 +23,6 @@ def np_sum(data: numpy.ndarray):
 class Author:
     def __init__(self, text: str, label: Any = None):
         self._text = unidecode(load_text(text) if text else text)
-        # Print info on how is input considered so that if a filename does
-        # not exists, then user can be informed.
-        if self._text is not None:
-            if self._text == text:
-                print('Author input was provided as raw text')
-            else:
-                print('Author input will be loaded from a file')
         self._label = label
         self._parsed_text = TextSpan()
         self._parsed_documents = TextSpan()
