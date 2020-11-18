@@ -2,10 +2,3 @@ LICENSE
 README.md
 include project.cfg
 include requirements.txt
-include Makefile
-graft data
-graft training
-graft lang_translation
-graft synonyms
-graft embeddings
-graft test_datasets
