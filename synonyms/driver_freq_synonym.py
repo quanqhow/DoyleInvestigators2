@@ -1,7 +1,7 @@
 #! /usr/bin/python3
 
 import sys
-from authordetect import Author, load_json, save_json
+from authordetect import Author, Tokenizer, load_json, save_json
 from synonym_functions import perturb_author
 
 
@@ -31,7 +31,7 @@ if __name__ == '__main__':
     for i, doc in enumerate(docs):
         perturbed_text, repl_count = perturb_author(doc['text'], embedding_file, proportion=rate)
         author = Author(perturbed_text)
-        author.preprocess()
+        author.preprocess(Tokenizer(lemmatizer='wordnet'))
         perturb_freq_map[i] = repl_count / len(author.words)
 
         total_repl_count += repl_count

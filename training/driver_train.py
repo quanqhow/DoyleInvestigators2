@@ -9,10 +9,10 @@ from writer2vec import writer2vec, split_combine_data, flatten
 # User Configuration #
 ######################
 seed = 0  # int, None
-# mlp_file = 'mlp.pkl'
-mlp_file = None
-# embedding_file = 'doyle.bin'
-embedding_file = None
+mlp_file = 'mlp.pkl'
+# mlp_file = None
+embedding_file = 'doyle_50dim_350part.bin'
+# embedding_file = None
 
 
 # Positive author first

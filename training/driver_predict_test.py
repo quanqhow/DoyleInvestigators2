@@ -17,6 +17,10 @@ LABEL_MAP = {
 if __name__ == '__main__':
     if len(sys.argv) < 5:
         print(f'Usage: {sys.argv[0]} part_size infile embedding mlp')
+        print('part_size (int)')
+        print('infile (str): JSON test file')
+        print('embedding (str): Embedding binary file')
+        print('mlp (str): MLP pickle file')
         sys.exit()
 
     part_size = int(sys.argv[1])
@@ -40,8 +44,7 @@ if __name__ == '__main__':
     }
 
     # Load embedding model
-    embedding = EmbeddingModel()
-    embedding.load(embedding_file)
+    embedding = EmbeddingModel(embedding_file)
 
     # Load classifier model
     mlp = load_pickle(mlp_file)

@@ -21,138 +21,85 @@ def np_sum(data: numpy.ndarray):
 
 
 class Author:
-    def __init__(self, corpus: str, label: Any = None):
-        self._corpus = unidecode(load_text(corpus) if corpus else corpus)
-        # Print info on how is input considered so that if a filename does
-        # not exists, then user can be informed.
-        if self._corpus is not None:
-            if self._corpus == corpus:
-                print('Author corpus was provided as raw text')
-            else:
-                print('Author corpus will be loaded from a file')
+    def __init__(self, text: str, label: Any = None):
+        self._text = unidecode(load_text(text) if text else text)
         self._label = label
-        self._parsed = TextSpan()
-        self._docs = TextSpan()
+        self._parsed_text = TextSpan()
+        self._parsed_documents = TextSpan()
         self._embedding = None  # EmbeddingModel
-        self._docs_vectors = numpy.array([])
-        self._docs_vectors_norm = numpy.array([])
-
-    @property
-    def corpus(self):
-        return self._corpus
+        self._dv = numpy.array([])
+        self._dv_norm = numpy.array([])
 
     @property
     def label(self):
         return self._label
 
     @property
-    def parsed(self):
-        return self._parsed
+    def text(self):
+        return self._text
 
     @property
     def words(self):
-        return type(self).get_tokens(self._parsed, min_depth=2)
+        return list(str(w) for w in self.parsed_words)
 
     @property
     def sentences(self):
-        return type(self).get_tokens(self._parsed, min_depth=3)
+        return list(str(s) for s in self.parsed_sentences)
 
     @property
-    def docs(self):
-        return self._docs
-
-    # NOTE: *_str properties are utility methods useful to get lists of strings.
-    @property
-    def words_str(self):
-        return list(str(w) for w in self.words)
+    def sentences_and_words(self):
+        return list(list(s.iter_tokens()) for s in self.parsed_sentences)
 
     @property
-    def sentences_str(self):
-        return list(str(s) for s in self.sentences)
+    def documents(self):
+        return list(str(d) for d in self.parsed_documents)
 
     @property
-    def sentences_words_str(self):
-        return list(list(s.iter_tokens()) for s in self.sentences)
+    def parsed_text(self):
+        return self._parsed_text
+
+    @property
+    def parsed_words(self):
+        return self._parsed_text.get_tokens(2)
+
+    @property
+    def parsed_sentences(self):
+        return self._parsed_text.get_tokens(3)
+
+    @property
+    def parsed_documents(self):
+        return self._parsed_documents
 
     @property
     def embedding(self):
         return self._embedding
 
     @property
-    def docs_vectors(self):
-        return self._docs_vectors
+    def dv(self):
+        return self._dv
 
     @property
-    def docs_vectors_norm(self):
-        return self._docs_vectors_norm
-
-    @staticmethod
-    def get_tokens(text_span: 'TextSpan', *, min_depth=2):
-        depth = text_span.depth
-        if depth >= min_depth:
-            tokens = list(text_span.iter_tokens(depth - (min_depth - 1)))
-            return TextSpan(tokens, (tokens[0].span[0], tokens[-1].span[1]))
-        return TextSpan()
-
-    @staticmethod
-    def substitute(
-        text: str,
-        text_span: 'TextSpan',
-        *,
-        force_capitalization: bool = True,
-    ):
-        """Substitutes the given tokens in a text."""
-        parsed_text = ''
-        for i, tspan in enumerate(text_span):
-            # Get text before first new token, if token is "at the beginning"
-            # if i == 0 and tspan.span[0] < 3:
-                # parsed_text = text[:tspan.span[0]]
-
-            # Check capitalization for new token.
-            # First letter capitalization is applied if any of the first two
-            # characters of original token are uppercase to allow a symbol
-            # (e.g., quotation mark) and letter combination.
-            # NOTE: This is tricky in the sense that if a substituted token is
-            # not wanted capitalized, this will force it. Also, this is
-            # tokenizer dependent.
-            new_token = str(tspan)
-            old_token = text[tspan.span[0]:tspan.span[1]]
-            if force_capitalization and any(map(str.isupper, old_token[:2])):
-                if old_token.isupper():
-                    # Caplitalize token
-                    new_token = new_token.upper()
-                elif len(new_token) > 0:
-                    # Capitalize only first character
-                    new_token = new_token[0].upper() + new_token[1:]
-
-            # Get text from end of new token to begin of next token or end
-            # of text
-            post_text = ''
-            if i < len(text_span) - 1:
-                post_text = text[slice(tspan.span[1], text_span[i+1].span[0])]
-
-            # Substitute new token
-            parsed_text += new_token + post_text
-        return parsed_text
+    def dv_norm(self):
+        return self._dv_norm
 
     def preprocess(self, tokenizer: Tokenizer = Tokenizer()):
-        # Reset because parsed corpus might have changed
-        self._docs = TextSpan()
+        # Reset because parsed text might have changed
+        self._parsed_documents = TextSpan()
         self._embedding = None
-        self._docs_vectors = numpy.array([])
-        self._docs_vectors_norm = numpy.array([])
+        self._dv = numpy.array([])
+        self._dv_norm = numpy.array([])
 
         if tokenizer is None:
-            # NOTE: No tokenizer, then represent corpus as one sentence
+            # NOTE: No tokenizer, then represent text as one sentence
             # with one token.
-            span = (0, len(self._corpus))
-            token = TextSpan(self._corpus, span)
+            span = (0, len(self._text))
+            token = TextSpan(self._text, span)
             sent = TextSpan([token], span)
             sents = TextSpan([sent], span)
-            self._parsed = sents
+            self._parsed_text = sents
         else:
             sents = TextSpan()
-            for sb, se, s in tokenizer.sentencize(self._corpus):
+            for sb, se, s in tokenizer.sentencize(self._text):
                 sent = TextSpan()
                 for tb, te, t in tokenizer.tokenize(s):
                     tspan = (tb + sb, te + sb)
@@ -163,9 +110,9 @@ class Author:
                     sents.append(sent)
             if len(sents) > 0:
                 sents.span = (sents[0].span[0], sents[-1].span[1])
-            self._parsed = sents
+            self._parsed_text = sents
 
-    def partition_into_docs(self, size: int = None, remain_factor: float = 1.):
+    def partition_into_documents(self, size: int = None, remain_factor: float = 1.):
         """Partition text into documents of a specified token count."""
         def partition(size, remain_factor):
             # Limit lower bound of size
@@ -174,7 +121,7 @@ class Author:
             # Iterate through sentences
             cnt = 0
             doc = TextSpan()
-            for s in self.sentences:
+            for s in self.parsed_sentences:
                 cnt += len(s)
                 if cnt <= size:
                     # Add sentence to current document until partition
@@ -204,26 +151,28 @@ class Author:
 
         # If no partition size provided, then consider a single document
         if size is None or size < 1:
-            docs = TextSpan([self.sentences])
+            docs = TextSpan([self.parsed_sentences])
         else:
             docs = TextSpan(list(partition(size, remain_factor)))
 
         if len(docs) > 0:
             docs.span = (docs[0].span[0], docs[-1].span[1])
-        self._docs = docs
+        self._parsed_documents = docs
 
     def embed(self, embedding=None, **kwargs):
         # Reset document embeddings
-        self._docs_vectors = numpy.array([])
-        self._docs_vectors_norm = numpy.array([])
+        self._dv = numpy.array([])
+        self._dv_norm = numpy.array([])
 
         if embedding is None:
             self._embedding = EmbeddingModel(**kwargs)
-            self._embedding.train(self.sentences_words_str)
+            self._embedding.train(self.sentences_and_words)
+        elif isinstance(embedding, str):
+            self._embedding = EmbeddingModel(embedding)
         else:
             self._embedding = embedding
 
-    def embed_docs(self, embedding=None, **kwargs):
+    def embed_documents(self, embedding=None, **kwargs):
         # NOTE: Auto-embed with default parameters
         if self._embedding is None or embedding is not None:
             self.embed(embedding)
@@ -231,22 +180,22 @@ class Author:
         # Use norm vectors
         use_norm = kwargs.pop('use_norm', True)
         if use_norm:
-            self._docs_vectors_norm = numpy.array([
+            self._dv_norm = numpy.array([
                 type(self).doc2vec(doc, self._embedding, use_norm=use_norm, **kwargs)
-                for doc in self.docs
+                for doc in self.parsed_documents
             ])
-            self._docs_vectors = self._docs_vectors_norm
+            self._dv = self._dv_norm
         else:
-            self._docs_vectors = numpy.array([
+            self._dv = numpy.array([
                 type(self).doc2vec(doc, self._embedding, use_norm=False, **kwargs)
-                for doc in self.docs
+                for doc in self.parsed_documents
             ])
 
     def writer2vec(self, **kwargs):
         """Pipeline for generating Author and document embeddings."""
         # NOTE: Ensure that parameter names do not collide.
-        self.preprocess(kwargs.pop('tokenizer', Tokenizer()))
-        self.partition_into_docs(
+        self.preprocess(kwargs.pop('tokenizer', Tokenizer(lemmatizer='wordnet')))
+        self.partition_into_documents(
             size=kwargs.pop('part_size', None),
             remain_factor=kwargs.pop('remain_factor', 1.),
         )
@@ -257,7 +206,7 @@ class Author:
         use_norm = kwargs.pop('use_norm', True)
         missing_value = kwargs.pop('missing_value', 0)
         self.embed(**kwargs)
-        self.embed_docs(
+        self.embed_documents(
             stopwords=stopwords,
             func=func,
             use_norm=use_norm,

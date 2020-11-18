@@ -131,6 +131,13 @@ class TextSpan(tlist):
     #     #         if is_span_bounded_by
     #     return idxs
 
+    def get_tokens(self, min_depth=2):
+        depth = self.depth
+        if depth >= min_depth:
+            tokens = list(self.iter_tokens(depth - (min_depth - 1)))
+            return type(self)(tokens, (tokens[0].span[0], tokens[-1].span[1]))
+        return type(self)()
+
     def iter_tokens(self, depth: int = -1):
         def iter_tokens(obj, curr_depth):
             for item in obj:
@@ -153,3 +160,38 @@ class TextSpan(tlist):
             yield from iter_tokens(self, depth)
         else:
             yield from iter_tokens(self, 1)
+
+    def substitute(self, text: str, *, force_capitalization: bool = True):
+        """Substitutes the given tokens in a text."""
+        new_text = ''
+        for i, tspan in enumerate(self):
+            # Get text before first new token, if token is "at the beginning"
+            # if i == 0 and tspan.span[0] < 3:
+                # new_text = text[:tspan.span[0]]
+
+            # Check capitalization for new token.
+            # First letter capitalization is applied if any of the first two
+            # characters of original token are uppercase to allow a symbol
+            # (e.g., quotation mark) and letter combination.
+            # NOTE: This is tricky in the sense that if a substituted token is
+            # not wanted capitalized, this will force it. Also, this is
+            # tokenizer dependent.
+            new_token = str(tspan)
+            old_token = text[tspan.span[0]:tspan.span[1]]
+            if force_capitalization and any(map(str.isupper, old_token[:2])):
+                if old_token.isupper():
+                    # Caplitalize entire token
+                    new_token = new_token.upper()
+                elif len(new_token) > 0:
+                    # Capitalize first character
+                    new_token = new_token[0].upper() + new_token[1:]
+
+            # Get text from end of new token to begin of next token or end
+            # of text
+            post_text = ''
+            if i < len(self) - 1:
+                post_text = text[slice(tspan.span[1], self[i+1].span[0])]
+
+            # Substitute new token
+            new_text += new_token + post_text
+        return new_text

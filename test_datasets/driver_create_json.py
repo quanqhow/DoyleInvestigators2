@@ -2,13 +2,7 @@
 
 import sys
 import random
-from authordetect import Author, save_json
-
-
-def save_corpus(data: list, fn: str):
-    """Write a data structure into a JSON file."""
-    with open(fn, 'w') as fd:
-        json.dump(data, fd)
+from authordetect import Author, Tokenizer, save_json
 
 
 def get_documents(corpus_and_labels, part_size: int = None):
@@ -17,13 +11,13 @@ def get_documents(corpus_and_labels, part_size: int = None):
     docs = []
     for corpus, label in corpus_and_labels:
         author = Author(corpus, label)
-        author.preprocess()
-        author.partition_into_docs(part_size)
-        for doc in author.docs:
-            words = Author.get_tokens(doc)
+        author.preprocess(Tokenizer(lemmatizer='wordnet'))
+        author.partition_into_documents(part_size)
+        for doc in author.parsed_documents:
+            words = doc.get_tokens()
             docs.append({
                 'label': author.label,
-                'text': Author.substitute(author.corpus, words),
+                'text': words.substitute(author.text),
             })
     return docs
 

@@ -28,7 +28,6 @@ if __name__ == '__main__':
 
     # Load documents from JSON file
     docs = load_json(infile)
-
     print('Loaded', len(docs), 'documents for testing')
 
     # Process documents

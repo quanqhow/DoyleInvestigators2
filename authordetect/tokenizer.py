@@ -25,7 +25,8 @@ class Tokenizer:
         *,
         use_stopwords=False,
         min_token_length=1,
-        lemmatizer='wordnet',
+        lemmatizer=None,
+        # lemmatizer='wordnet',
         **kwargs,
     ):
 

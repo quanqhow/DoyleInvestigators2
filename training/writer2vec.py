@@ -28,8 +28,8 @@ def writer2vec(
     vectors = []
     labels = []
     for author in authors:
-        vectors.append(author.docs_vectors)
-        labels.append([author.label] * len(author.docs_vectors))
+        vectors.append(author.dv)
+        labels.append([author.label] * len(author.dv))
 
     if outfiles:
         if isinstance(outfiles, str):
